@@ -10,5 +10,6 @@
   <depend stack="ros" /> <!-- roslib -->
   <depend stack="ros_comm" /> <!-- std_msgs, rospy, roscpp -->
   <depend stack="shadow_robot" /> <!-- sr_robot_msgs -->
+  <depend stack="serial_communication" /> <!-- cereal_port -->
 
 </stack>
