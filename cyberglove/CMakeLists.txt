@@ -23,5 +23,6 @@ rosbuild_gensrv()
 
 rosbuild_add_executable(cyberglove src/cyberglove_publisher.cpp src/cyberglove_node.cpp src/serial_glove.cpp src/xml_calibration_parser.cpp src/cyberglove_service.cpp)
 target_link_libraries(cyberglove cereal_port)
+target_link_libraries(cyberglove tinyxml)
 
 rosbuild_add_gtest(test/test_calibration test/test_calibration.cpp src/xml_calibration_parser.cpp )
