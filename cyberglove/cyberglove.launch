@@ -15,9 +15,9 @@
     -->
     <param name="sampling_frequency" type="double" value="100.0" />
     <param name="publish_frequency" type="double" value="10.0" />
-    <param name="path_to_glove" type="string" value="/dev/ttyUSB0" />
+    <rosparam command="load" file="$(find sr_cyberglove_config)/serial/serial_port.yaml" />
     <param name="path_to_calibration" type="string" value="$(find
-    sr_control_gui)/param/cyberglove.cal" />
+    sr_cyberglove_config)/calibrations/cyberglove.cal" />
   </node>
 
   <!-- Robot state publisher -->

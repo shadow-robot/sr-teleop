@@ -4,3 +4,6 @@ cyberglove/src/cyberglove
 threeD_mouse/build
 threeD_mouse/bin
 cyberglove/srv_gen
+cyberglove/lib
+sr_remappers/build
+sr_remappers/bin/cyberglove_remapper

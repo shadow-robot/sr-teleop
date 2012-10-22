@@ -19,6 +19,7 @@
   <depend package="sr_robot_msgs"/>
 <!--  <depend package="cybergrasp"/> -->
   <depend package="cyberglove"/>
+  <depend package="sr_cyberglove_config"/>
 
 </package>
 
