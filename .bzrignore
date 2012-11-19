@@ -7,3 +7,4 @@ cyberglove/srv_gen
 cyberglove/lib
 sr_remappers/build
 sr_remappers/bin/cyberglove_remapper
+./auto
