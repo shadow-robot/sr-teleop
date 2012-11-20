@@ -8,3 +8,4 @@ cyberglove/lib
 sr_remappers/build
 sr_remappers/bin/cyberglove_remapper
 ./auto
+./cyberglove/bin/test/test_calibration

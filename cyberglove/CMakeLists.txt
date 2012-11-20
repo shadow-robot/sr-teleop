@@ -26,3 +26,4 @@ target_link_libraries(cyberglove cereal_port)
 target_link_libraries(cyberglove tinyxml)
 
 rosbuild_add_gtest(test/test_calibration test/test_calibration.cpp src/xml_calibration_parser.cpp )
+target_link_libraries(test/test_calibration tinyxml)
