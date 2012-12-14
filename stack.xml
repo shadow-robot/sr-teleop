@@ -1,7 +1,7 @@
 <stack>
   <description brief="sr_teleop">This stack contains different mean of controlling the Shadow Hand (such as a node for the Cyberglove and its remapper for the Shadow Hand).</description>
   <author>Maintained by Ugo Cupcic / software@shadowrobot.com</author>
-  <license>GPL</license>  
+  <license>GPL</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/sr_teleop</url>
   <depend stack="common" /> <!-- tinyxml -->
@@ -11,5 +11,5 @@
   <depend stack="ros_comm" /> <!-- std_msgs, rospy, roscpp -->
   <depend stack="shadow_robot" /> <!-- sr_robot_msgs -->
   <depend stack="serial_communication" /> <!-- cereal_port -->
-
+  <depend stack="sr_config" />
 </stack>
