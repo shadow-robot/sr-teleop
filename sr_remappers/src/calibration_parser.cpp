@@ -112,7 +112,10 @@ std::vector<double> CalibrationParser::get_remapped_vector( std::vector<double> 
     //check the size of the matrix
     if( input_vector.size() != calibration_matrix.size() )
     {
-        ROS_ERROR("The size of the given vector doesn't correspond to the mapping: received %d, wanted %d", input_vector.size(), calibration_matrix.size());
+      ROS_ERROR_STREAM("The size of the given vector doesn't correspond to the mapping: received "
+                       << input_vector.size()
+                       << ", wanted "
+                       << calibration_matrix.size());
         return std::vector<double>(calibration_matrix[0].size());
     }
 
