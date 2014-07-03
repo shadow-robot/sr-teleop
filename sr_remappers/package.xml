@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+  <name>sr_remappers</name>
+  <version>0.0.0</version>
+  <description>Remaps data from and to the Shadow Robot hardware</description>
+
+  <!-- One maintainer tag required, multiple allowed, one person per tag -->
+  <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <license>GPL</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>sr_robot_msgs</build_depend>
+  <build_depend>cyberglove</build_depend>
+  <build_depend>sr_cyberglove_config</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>sr_robot_msgs</run_depend>
+  <run_depend>cyberglove</run_depend>
+  <run_depend>sr_cyberglove_config</run_depend>
+</package>
