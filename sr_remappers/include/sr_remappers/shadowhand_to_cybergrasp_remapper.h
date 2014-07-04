@@ -1,5 +1,5 @@
 /**
- * @file   shadowhand_to_cybergrasp_remapper.cpp
+ * @file   shadowhand_to_cybergrasp_remapper.h
  * @author Ugo Cupcic <ugo@shadowrobot.com>, Contact <contact@shadowrobot.com>
  * @date   Thu May 13 09:44:52 2010
  *
@@ -64,7 +64,7 @@ class ShadowhandToCybergraspRemapper
   Publisher shadowhand_cybergrasp_pub;
   ///the calibration parser containing the mapping matrix
   CalibrationParser* calibration_parser;
-  
+
   /////////////////
   //  CALLBACKS  //
   /////////////////
@@ -76,7 +76,7 @@ class ShadowhandToCybergraspRemapper
    * @param msg the joint_states message
    */
   void jointstatesCallback(const sensor_msgs::JointStateConstPtr& msg);
-  
+
 }; // end class
 
 } //end namespace

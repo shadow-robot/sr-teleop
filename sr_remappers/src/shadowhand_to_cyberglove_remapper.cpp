@@ -1,5 +1,5 @@
 /**
- * @file   shadowhand_to_cybergrasp_remapper.cpp
+ * @file   shadowhand_to_cyberglove_remapper.cpp
  * @author Ugo Cupcic <ugo@shadowrobot.com>, Contact <contact@shadowrobot.com>
  * @date   Thu May 13 09:44:52 2010
  *

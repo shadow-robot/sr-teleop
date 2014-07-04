@@ -78,14 +78,14 @@ namespace shadowhand_to_cybergrasp_remapper{
       delete calibration_parser;
   }
 
-  /** 
+  /**
    * process the joint_states callback: get the force data from the
    * finger tips and stream it to the cybergrasp
-   * 
+   *
    * @param msg the joint_states message
    */
   void ShadowhandToCybergraspRemapper::jointstatesCallback(const sensor_msgs::JointStateConstPtr& msg)
-  { 
+  {
     //read msg and remap the vector to the cybergrasp
     cybergrasp::cybergraspforces cybergrasp_msg;
 
@@ -121,7 +121,7 @@ namespace shadowhand_to_cybergrasp_remapper{
       {
 	average = msg->effort[i]*10.0;
       }
-    
+
     average /= msg->effort.size();
 
     average /= msg->effort.size();
