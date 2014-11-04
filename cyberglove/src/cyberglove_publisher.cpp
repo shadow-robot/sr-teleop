@@ -45,7 +45,7 @@ namespace cyberglove{
   /////////////////////////////////
 
   CyberglovePublisher::CyberglovePublisher()
-    : n_tilde("~"), sampling_rate(0.0), publish_counter_max(0), publish_counter_index(0),
+    : n_tilde("~"), publish_counter_max(0), publish_counter_index(0),
       path_to_glove("/dev/ttyS0"), publishing(true)
   {
 
@@ -58,7 +58,6 @@ namespace cyberglove{
     //set sampling frequency
     double sampling_freq;
     n_tilde.param("sampling_frequency", sampling_freq, 100.0);
-    sampling_rate = Rate(sampling_freq);
 
     // set publish_counter: the number of data we'll average
     // before publishing.
@@ -182,13 +181,14 @@ namespace cyberglove{
       publishing = false;
       ROS_DEBUG("The glove button is off, no data will be read / sent");
       ros::spinOnce();
-      sampling_rate.sleep();
       return;
     }
     publishing = true;
 
     //appends the current position to the vector of position
     glove_positions.push_back( glove_pos );
+
+    publish_counter_index += 1;
 
     //if we've enough samples, publish the data:
     if( publish_counter_index == publish_counter_max )
@@ -221,10 +221,8 @@ namespace cyberglove{
       publish_counter_index = 0;
       glove_positions.clear();
     }
-
-    publish_counter_index += 1;
+    
     ros::spinOnce();
-    sampling_rate.sleep();
   }
 
   void CyberglovePublisher::add_jointstate(float position, std::string joint_name)

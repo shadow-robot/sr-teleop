@@ -65,7 +65,6 @@ namespace cyberglove{
 
     //ros node handle
     NodeHandle node, n_tilde;
-    Rate sampling_rate;
     unsigned int publish_counter_max, publish_counter_index;
 
     ///the actual connection with the cyberglove is done here.
