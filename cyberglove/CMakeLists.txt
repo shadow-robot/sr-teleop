@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   genmsg
   sr_cyberglove_config
   cereal_port
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -69,7 +70,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES cyberglove
-CATKIN_DEPENDS roslib roscpp rospy std_msgs sensor_msgs diagnostic_msgs genmsg sr_cyberglove_config cereal_port
+CATKIN_DEPENDS roslib roscpp rospy std_msgs sensor_msgs diagnostic_msgs genmsg sr_cyberglove_config cereal_port message_runtime
 #  DEPENDS system_lib
 )
 
@@ -101,6 +102,7 @@ add_executable(cyberglove
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(cyberglove
   ${catkin_EXPORTED_TARGETS}
+  ${PROJECT_NAME}_generate_messages_cpp
 )
 
 ## Specify libraries to link a library or executable target against
