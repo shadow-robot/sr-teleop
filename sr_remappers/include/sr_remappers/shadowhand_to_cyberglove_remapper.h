@@ -84,6 +84,15 @@ class ShadowhandToCybergloveRemapper
    */
   void jointstatesCallback(const sensor_msgs::JointStateConstPtr& msg);
 
+  /**
+   * process the joint_states callback for the finger abductions: processes the message from the cyberglove node, remap it to the Dextrous hand J4s
+   * It overwrites whatever was written for the J4s by the calibration parser get_remapped_vector
+   *
+   * @param msg the joint_states message
+   * @param vect the vector where the result is written (only J4s are written)
+   */
+  void getAbductionJoints( const sensor_msgs::JointStateConstPtr& msg, std::vector<double>& vect);
+
 }; // end class
 
 } //end namespace
