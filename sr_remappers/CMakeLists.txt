@@ -63,8 +63,8 @@ find_package(Boost REQUIRED system filesystem date_time thread)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES sr_remappers
+INCLUDE_DIRS include
+LIBRARIES sr_remappers
 CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs sr_robot_msgs sr_cyberglove_config cyberglove
 #  DEPENDS system_lib
 )
@@ -78,6 +78,26 @@ CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs sr_robot_msgs sr_cyberglove_con
 include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
+
+## Declare a cpp executable
+add_library(${PROJECT_NAME}
+  src/shadowhand_to_cyberglove_remapper.cpp
+  src/calibration_parser.cpp
+)
+
+## Add cmake target dependencies of the executable/library
+## as an example, message headers may need to be generated before nodes
+add_dependencies(${PROJECT_NAME}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+
 
 ## Declare a cpp executable
 add_executable(cyberglove_remapper
