@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>cyberglove_trajectory</name>
+  <version>0.0.0</version>
+  <description>A package that gets joint positions from the cyberglove via serial port, and calibrates them, remaps them to Shadow hand joints, and publishes them as joint trajectories in a single node</description>
+
+  <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
+  <license>GPL</license>
+
+  <author email="toni@shadowrobot.com">Toni Oliver</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cyberglove</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sr_remappers</build_depend>
+  <build_depend>trajectory_msgs</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>control_msgs</build_depend>
+
+
+  <run_depend>cyberglove</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sr_remappers</run_depend>
+  <run_depend>trajectory_msgs</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>control_msgs</run_depend>
+
+</package>
