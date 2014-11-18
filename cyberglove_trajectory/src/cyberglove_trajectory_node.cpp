@@ -27,9 +27,7 @@
 
 #include <ros/ros.h>
 #include <time.h>
-#include "cyberglove/cyberglove_publisher.h"
-#include "cyberglove/cyberglove_service.h"
-#include "cyberglove/Start.h"
+#include "cyberglove_trajectory/cyberglove_trajectory_publisher.h"
 #include <boost/smart_ptr.hpp>
 
 using namespace cyberglove;

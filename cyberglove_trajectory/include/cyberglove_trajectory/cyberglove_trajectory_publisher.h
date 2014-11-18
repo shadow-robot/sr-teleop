@@ -118,7 +118,7 @@ namespace cyberglove{
     static const std::vector<std::string> joint_mapping_vector_;
     static const std::vector<std::string> glove_sensors_vector_;
 
-    boost::scoped_ptr<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>> action_client_;
+    boost::scoped_ptr<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> > action_client_;
     control_msgs::FollowJointTrajectoryGoal trajectory_goal_;
   }; // end class CybergloveTrajectoryPublisher
 

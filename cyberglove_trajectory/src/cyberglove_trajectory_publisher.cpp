@@ -32,6 +32,7 @@
 #include <sstream>
 
 #include "cyberglove_trajectory/cyberglove_trajectory_publisher.h"
+#include <boost/assign.hpp>
 
 using namespace ros;
 using namespace xml_calibration_parser;
@@ -184,23 +185,10 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     //start reading the data.
     res = serial_glove->start_stream();
 
-    //publishes calibrated JointState messages
-    std::string prefix;
     std::string searched_param;
-    n_tilde.searchParam("cyberglove_prefix", searched_param);
-    n_tilde.param(searched_param, prefix, std::string());
-    std::string full_topic = prefix + "/calibrated/joint_states";
-    cyberglove_pub = n_tilde.advertise<sensor_msgs::JointState>(full_topic, 2);
-
-    //publishes raw JointState messages
-    n_tilde.searchParam("cyberglove_prefix", searched_param);
-    n_tilde.param(searched_param, prefix, std::string());
-    full_topic = prefix + "/raw/joint_states";
-    cyberglove_raw_pub = n_tilde.advertise<sensor_msgs::JointState>(full_topic, 2);
-
-
     std::string joint_prefix;
-    n_tilde.param("joint_prefix", joint_prefix, "");
+    searched_param = "joint_prefix";
+    n_tilde.param(searched_param, joint_prefix, std::string());
     std::string action_server_name = "trajectory_controller/follow_joint_trajectory";
     action_client_.reset(new actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>(joint_prefix + action_server_name, true));
 
@@ -303,9 +291,6 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
 
   void CybergloveTrajectoryPublisher::applyJointMapping(const std::vector<double>& glove_postions, std::vector<double>& hand_positions )
   {
-      sr_robot_msgs::joint joint;
-      sr_robot_msgs::sendupdate pub;
-
       //Do conversion
       std::vector<double> vect = map_calibration_parser->get_remapped_vector(glove_postions);
 
