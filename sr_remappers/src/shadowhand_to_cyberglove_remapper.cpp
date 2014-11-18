@@ -103,6 +103,10 @@ void ShadowhandToCybergloveRemapper::jointstatesCallback( const sensor_msgs::Joi
 
     //Do conversion
     std::vector<double> vect = calibration_parser->get_remapped_vector(msg->position);
+
+    //Process J4's
+    getAbductionJoints(msg, vect);
+
     //Generate sendupdate message
     pub.sendupdate_length = number_hand_joints;
 
@@ -116,5 +120,47 @@ void ShadowhandToCybergloveRemapper::jointstatesCallback( const sensor_msgs::Joi
     pub.sendupdate_length = number_hand_joints;
     pub.sendupdate_list = table;
     shadowhand_pub.publish(pub);
+}
+
+void ShadowhandToCybergloveRemapper::getAbductionJoints( const sensor_msgs::JointStateConstPtr& msg, std::vector<double>& vect)
+{
+  //Add the 3 abduction angles to have an idea of where the centre lies
+  double ab_total = msg->position[10] + msg->position[14] +  msg->position[18];
+
+  //When trying to understand this code bear in mind that the abduction sign convention
+  // in the shadow hand is the opposite for ff and mf than for rf and lf.
+  if (ab_total/2 < msg->position[10]) // If the centre lies between ff and mf
+  {
+    //FFJ4
+    vect[7] = -ab_total/2;
+    //MFJ4
+    vect[10] = msg->position[10] - ab_total/2;
+    //RFJ4
+    vect[13] = -(msg->position[14] + vect[10]);
+    //LFJ4
+    vect[16] = -msg->position[18] + vect[13];
+  }
+  else if (ab_total/2 < msg->position[10] + msg->position[14]) // If the centre lies between mf and rf
+  {
+    //MFJ4
+    vect[10] = -(ab_total/2 - msg->position[10]);
+    //FFJ4
+    vect[7] = -msg->position[10] + vect[10];
+    //RFJ4
+    vect[13] = -(msg->position[14] + vect[10]);
+    //LFJ4
+    vect[16] = -msg->position[18] + vect[13];
+  }
+  else // If the centre lies between rf and lf
+  {
+    //LFJ4
+    vect[16] = -ab_total/2;
+    //RFJ4
+    vect[13] = msg->position[18] + vect[16];
+    //MFJ4
+    vect[10] = -(msg->position[14] + vect[13]);
+    //FFJ4
+    vect[7] = -msg->position[10] + vect[10];
+  }
 }
 }//end namespace
