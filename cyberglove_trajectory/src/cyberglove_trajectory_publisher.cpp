@@ -137,6 +137,18 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
 
     initialize_calibration(path_to_calibration);
 
+    std::string searched_param;
+    std::string joint_prefix;
+    searched_param = "joint_prefix";
+    n_tilde.param(searched_param, joint_prefix, std::string());
+    std::string action_server_name = "robot_trajectory_controller/follow_joint_trajectory";
+    action_client_.reset(new actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>(joint_prefix + action_server_name, true));
+
+    for (size_t i = 0; i < joint_name_vector_.size(); i++)
+    {
+      trajectory_goal_.trajectory.joint_names.push_back(joint_prefix + joint_name_vector_[i]);
+    }
+
     //set sampling frequency
     double sampling_freq;
     n_tilde.param("sampling_frequency", sampling_freq, 100.0);
@@ -184,16 +196,6 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     res = serial_glove->set_transmit_info(true);
     //start reading the data.
     res = serial_glove->start_stream();
-
-    std::string searched_param;
-    std::string joint_prefix;
-    searched_param = "joint_prefix";
-    n_tilde.param(searched_param, joint_prefix, std::string());
-    std::string action_server_name = "trajectory_controller/follow_joint_trajectory";
-    action_client_.reset(new actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>(joint_prefix + action_server_name, true));
-
-    trajectory_goal_.trajectory.joint_names = joint_name_vector_;
-
   }
 
   CybergloveTrajectoryPublisher::~CybergloveTrajectoryPublisher()
@@ -296,6 +298,11 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
 
       //Process J4's
       getAbductionJoints(glove_postions, vect);
+
+      for (size_t i=0; i < vect.size(); i++)
+      {
+        vect[i] = vect[i] * 0.017453292519943295; //convert degrees to radians
+      }
 
       hand_positions = vect;
   }
