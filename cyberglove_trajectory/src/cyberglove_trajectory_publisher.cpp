@@ -33,6 +33,7 @@
 
 #include "cyberglove_trajectory/cyberglove_trajectory_publisher.h"
 #include <boost/assign.hpp>
+#include <math.h>
 
 using namespace ros;
 using namespace xml_calibration_parser;
@@ -281,6 +282,12 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
       trajectory_point.velocities = std::vector<double>(trajectory_goal_.trajectory.joint_names.size(), 0.0);
       // We set the time from start to 10 ms, to allow some time to get there
       trajectory_point.time_from_start = ros::Duration (0.010);
+
+      for (size_t i=0; i < trajectory_point.positions.size(); i++)
+      {
+        if(isnan(trajectory_point.positions[i]))
+          return;
+      }
 
       trajectory_goal_.trajectory.points.push_back(trajectory_point);
 
