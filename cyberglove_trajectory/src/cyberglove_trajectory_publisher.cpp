@@ -142,7 +142,7 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     std::string joint_prefix;
     searched_param = "joint_prefix";
     n_tilde.param(searched_param, joint_prefix, std::string());
-    std::string action_server_name = "robot_trajectory_controller/follow_joint_trajectory";
+    std::string action_server_name = "trajectory_controller/follow_joint_trajectory";
     action_client_.reset(new actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>(joint_prefix + action_server_name, true));
 
     for (size_t i = 0; i < joint_name_vector_.size(); i++)
