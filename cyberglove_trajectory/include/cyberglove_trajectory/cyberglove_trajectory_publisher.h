@@ -120,6 +120,8 @@ namespace cyberglove{
 
     boost::scoped_ptr<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> > action_client_;
     control_msgs::FollowJointTrajectoryGoal trajectory_goal_;
+
+    std::string cyberglove_version_;
   }; // end class CybergloveTrajectoryPublisher
 
 } // end namespace
