@@ -68,40 +68,47 @@ namespace cyberglove{
     ROS_INFO_STREAM("Sampling at " << sampling_freq << "Hz ; Publishing at "
                     << publish_freq << "Hz ; Publish counter: "<< publish_counter_max);
 
+    //Get the cyberglove version '2' or '3'
+    n_tilde.param("cyberglove_version", cyberglove_version_, std::string("2"));
+    ROS_INFO("Cyberglove version: %s", cyberglove_version_.c_str());
+
     // set path to glove
     n_tilde.param("path_to_glove", path_to_glove, std::string("/dev/ttyS0"));
     ROS_INFO("Opening glove on port: %s", path_to_glove.c_str());
 
     //initialize the connection with the cyberglove and binds the callback function
-    serial_glove = boost::shared_ptr<CybergloveSerial>(new CybergloveSerial(path_to_glove, boost::bind(&CyberglovePublisher::glove_callback, this, _1, _2)));
+    serial_glove = boost::shared_ptr<CybergloveSerial>(new CybergloveSerial(path_to_glove, cyberglove_version_, boost::bind(&CyberglovePublisher::glove_callback, this, _1, _2)));
 
     int res = -1;
-    cyberglove_freq::CybergloveFreq frequency;
-
-    switch( (int)sampling_freq)
+    if(cyberglove_version_ == "2")
     {
-    case 100:
-      res = serial_glove->set_frequency(frequency.hundred_hz);
-      break;
-    case 45:
-      res = serial_glove->set_frequency(frequency.fourtyfive_hz);
-      break;
-    case 10:
-      res = serial_glove->set_frequency(frequency.ten_hz);
-      break;
-    case 1:
-      res = serial_glove->set_frequency(frequency.one_hz);
-      break;
-    default:
-      res = serial_glove->set_frequency(frequency.hundred_hz);
-      break;
+      cyberglove_freq::CybergloveFreq frequency;
+
+      switch( (int)sampling_freq)
+      {
+      case 100:
+        res = serial_glove->set_frequency(frequency.hundred_hz);
+        break;
+      case 45:
+        res = serial_glove->set_frequency(frequency.fourtyfive_hz);
+        break;
+      case 10:
+        res = serial_glove->set_frequency(frequency.ten_hz);
+        break;
+      case 1:
+        res = serial_glove->set_frequency(frequency.one_hz);
+        break;
+      default:
+        res = serial_glove->set_frequency(frequency.hundred_hz);
+        break;
+      }
+      //No filtering: we're oversampling the data, we want a fast poling rate
+      res = serial_glove->set_filtering(false);
+      //We want the glove to transmit the status (light on/off)
+      res = serial_glove->set_transmit_info(true);
     }
-    //No filtering: we're oversampling the data, we want a fast poling rate
-    res = serial_glove->set_filtering(false);
-    //We want the glove to transmit the status (light on/off)
-    res = serial_glove->set_transmit_info(true);
-    //start reading the data.
-    res = serial_glove->start_stream();
+
+    //For the moment we don't send any configuration commands to the Cyberglove III, as the default values work well for us
 
     //publishes calibrated JointState messages
     std::string prefix;
@@ -142,6 +149,9 @@ namespace cyberglove{
     jointstate_msg.name.push_back("G_WristYaw");
 
     jointstate_raw_msg.name = jointstate_msg.name;
+
+    //start reading the data.
+    res = serial_glove->start_stream();
   }
 
   CyberglovePublisher::~CyberglovePublisher()

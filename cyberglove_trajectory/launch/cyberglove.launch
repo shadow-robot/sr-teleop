@@ -1,8 +1,11 @@
 <launch>
   <arg name="serial_port" default="/dev/ttyUSB0"/>
   <arg name="joint_prefix" default=""/>
+  <arg name="calibration" default="$(find sr_cyberglove_config)/calibrations/cyberglove.cal"/>
+  <arg name="mapping" default="$(find sr_cyberglove_config)/mappings/GloveToHandMappings_generic"/>
+  <arg name="version" default="2"/>
 
-  <node pkg="cyberglove_trajectory" name="cyberglove" type="cyberglove_trajectory">
+  <node pkg="cyberglove_trajectory" name="$(arg joint_prefix)cyberglove" type="cyberglove_trajectory">
     <!-- We're doing some oversampling. You can set the frequency at which
 	 the data are sampled as well as the frequency at which they're published
 	 possible values:
@@ -14,8 +17,9 @@
     <param name="sampling_frequency" type="double" value="100.0" />
     <param name="publish_frequency" type="double" value="100.0" />
     <param name="path_to_glove" type="string" value="$(arg serial_port)" />
-    <param name="path_to_calibration" type="string" value="$(find sr_cyberglove_config)/calibrations/cyberglove.cal" />
-    <param name="cyberglove_mapping_path" type="string" value="$(find sr_cyberglove_config)/mappings/GloveToHandMappings_generic" />
+    <param name="path_to_calibration" type="string" value="$(arg calibration)" />
+    <param name="cyberglove_mapping_path" type="string" value="$(arg mapping)" />
     <param name="joint_prefix" type="string" value="$(arg joint_prefix)" />
+    <param name="cyberglove_version" type="string" value="$(arg version)" />
   </node>
 </launch>

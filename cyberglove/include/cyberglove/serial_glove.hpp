@@ -92,6 +92,12 @@ namespace cyberglove_freq
 
 namespace cyberglove
 {
+
+  enum reception_state
+  {
+    INITIAL,
+    RECEIVING_FRAME
+  };
   /**
    * This class uses the Cereal Port ROS package to connect to
    * and interact with the Cyberglove.
@@ -106,7 +112,7 @@ namespace cyberglove
      * @param callback a pointer to a callback function, which will be called each time a
      *                 complete joint message is received.
      */
-    CybergloveSerial(std::string serial_port, boost::function<void(std::vector<float>, bool)> callback);
+    CybergloveSerial(std::string serial_port, std::string cyberglove_version, boost::function<void(std::vector<float>, bool)> callback);
     ~CybergloveSerial();
 
     /**
@@ -195,6 +201,10 @@ namespace cyberglove
 
     ///Did we get any garbage in the received message?
     bool no_errors;
+
+    std::string cyberglove_version_;
+
+    reception_state reception_state_;
   };
 }
 

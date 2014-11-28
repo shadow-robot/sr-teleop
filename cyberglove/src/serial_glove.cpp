@@ -39,8 +39,9 @@ namespace cyberglove
 {
   const unsigned short CybergloveSerial::glove_size = 22;
 
-  CybergloveSerial::CybergloveSerial(std::string serial_port, boost::function<void(std::vector<float>, bool)> callback) :
-    nb_msgs_received(0), glove_pos_index(0), current_value(0), light_on(true), button_on(true), no_errors(true)
+  CybergloveSerial::CybergloveSerial(std::string serial_port, std::string cyberglove_version, boost::function<void(std::vector<float>, bool)> callback) :
+    nb_msgs_received(0), glove_pos_index(0), current_value(0), light_on(true), button_on(true), no_errors(true),
+    cyberglove_version_(cyberglove_version), reception_state_(INITIAL)
   {
     //initialize the vector of positions with 0s
     for (int i = 0; i < glove_size; ++i)
@@ -132,58 +133,82 @@ namespace cyberglove
     for (int i = 0; i < length; ++i)
     {
       current_value = (int)(unsigned char)world[i];
-      switch( current_value )
+
+      switch(reception_state_)
       {
-      case 'S':
-        //the line starts with S, followed by the sensors values
-        ++nb_msgs_received;
-        //reset the index to 0
-        glove_pos_index = 0;
-        //reset no_errors to true for the new message
-        no_errors = true;
-        break;
-
-      default:
-        //this is a glove sensor value, a status byte or a "message end"
-        switch( glove_pos_index )
-        {
-        case glove_size:
-          //the last char of the msg is the status byte
-
-          //the status bit 1 corresponds to the button
-          if(current_value & 2)
-            button_on = true;
-          else
-            button_on = false;
-          //the status bit 2 corresponds to the light
-          if(current_value & 4)
-            light_on = true;
-          else
-            light_on = false;
-
+        case INITIAL:
+          switch( current_value )
+          {
+          case 'S':
+            //the line starts with S, followed by the sensors values
+            ++nb_msgs_received;
+            //reset the index to 0
+            glove_pos_index = 0;
+            //reset no_errors to true for the new message
+            no_errors = true;
+            reception_state_ = RECEIVING_FRAME;
+            break;
+          }
           break;
+        case RECEIVING_FRAME:
+          //this is a glove sensor value, a status byte or a "message end"
+          switch( glove_pos_index )
+          {
+          case glove_size:
+            if(cyberglove_version_ == "2")
+            {
+              //the last char of the msg is the status byte
 
-        case glove_size + 1:
-          //the last char of the line should be 0
-          //if it is 0, then the full message has been received,
-          //and we call the callback function.
-          if( current_value == 0 && no_errors)
-            callback_function(glove_positions, light_on);
+              //the status bit 1 corresponds to the button
+              if(current_value & 2)
+                button_on = true;
+              else
+                button_on = false;
+              //the status bit 2 corresponds to the light
+              if(current_value & 4)
+                light_on = true;
+              else
+                light_on = false;
+            }
+            else
+            {
+              //the last char of the line should be 0
+              //if it is 0, then the full message has been received,
+              //and we call the callback function.
+              if( current_value == 0 && no_errors)
+                callback_function(glove_positions, light_on);
+              if( current_value != 0)
+                std::cout << "Last char is not 0: " << current_value << std::endl;
+
+              reception_state_ = INITIAL;
+            }
+            break;
+
+          case glove_size + 1:
+            //the last char of the line should be 0
+            //if it is 0, then the full message has been received,
+            //and we call the callback function.
+            if( current_value == 0 && no_errors)
+              callback_function(glove_positions, light_on);
+            if( current_value != 0)
+              std::cout << "Last char is not 0: " << current_value << std::endl;
+            reception_state_ = INITIAL;
+            break;
+
+          default:
+            //this is a joint data from the glove
+            //the value in the message should never be 0.
+            if( current_value == 0)
+            {
+              no_errors = false;
+            }
+            // the values sent by the glove are in the range [1;254]
+            //   -> we convert them to float in the range [0;1]
+            glove_positions[glove_pos_index] = (((float)current_value) - 1.0f) / 254.0f;
+            break;
+          }
+          ++glove_pos_index;
           break;
-
-        default:
-          //this is a joint data from the glove
-          //the value in the message should never be 0.
-          if( current_value == 0)
-            no_errors = false;
-          // the values sent by the glove are in the range [1;254]
-          //   -> we convert them to float in the range [0;1]
-          glove_positions[glove_pos_index] = (((float)current_value) - 1.0f) / 254.0f;
-          break;
-        }
-
-        ++glove_pos_index;
-        break;
       }
     }
   }

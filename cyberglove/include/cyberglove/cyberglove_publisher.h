@@ -96,6 +96,8 @@ namespace cyberglove{
     std::vector<float> calibration_values;
 
     std::vector<std::vector<float> > glove_positions;
+
+    std::string cyberglove_version_;
   }; // end class CyberglovePublisher
 
 } // end namespace

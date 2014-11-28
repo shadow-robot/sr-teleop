@@ -1,9 +1,12 @@
 <launch>
+  <arg name="serial_port" default="/dev/ttyUSB0"/>
+  <arg name="calibration" default="$(find sr_cyberglove_config)/calibrations/cyberglove.cal"/>
+  <arg name="version" default="2"/>
 
   <param name="robot_description" textfile="$(find
   cyberglove)/model/cyberglove.xml"/>
 
-  <node pkg="cyberglove" name="cyberglove" type="cyberglove">
+  <node pkg="cyberglove" name="cyberglove" type="cyberglove_node">
     <param name="cyberglove_prefix" type="string" value="/cyberglove" />
     <!-- We're doing some oversampling. You can set the frequency at which
 	 the data are sampled as well as the frequency at which they're published
@@ -15,9 +18,9 @@
     -->
     <param name="sampling_frequency" type="double" value="100.0" />
     <param name="publish_frequency" type="double" value="100.0" />
-    <rosparam command="load" file="$(find sr_cyberglove_config)/serial/serial_port.yaml" />
-    <param name="path_to_calibration" type="string" value="$(find
-    sr_cyberglove_config)/calibrations/cyberglove.cal" />
+    <param name="path_to_glove" type="string" value="$(arg serial_port)" />
+    <param name="path_to_calibration" type="string" value="$(arg calibration)" />
+    <param name="cyberglove_version" type="string" value="$(arg version)" />
   </node>
 
   <!-- Robot state publisher -->
