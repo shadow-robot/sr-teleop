@@ -107,10 +107,8 @@ namespace cyberglove{
       //We want the glove to transmit the status (light on/off)
       res = serial_glove->set_transmit_info(true);
     }
-    else
-    {
 
-    }
+    //For the moment we don't send any configuration commands to the Cyberglove III, as the default values work well for us
 
     //publishes calibrated JointState messages
     std::string prefix;
