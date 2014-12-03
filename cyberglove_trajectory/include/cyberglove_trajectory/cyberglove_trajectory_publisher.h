@@ -108,6 +108,7 @@ namespace cyberglove{
     boost::scoped_ptr<CalibrationParser> map_calibration_parser;
 
     Publisher cyberglove_raw_pub;
+    sensor_msgs::JointState jointstate_msg;
 
 
     std::vector<float> calibration_values;

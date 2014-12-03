@@ -145,6 +145,33 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
       trajectory_goal_.trajectory.joint_names.push_back(joint_prefix + joint_name_vector_[i]);
     }
 
+    cyberglove_raw_pub = n_tilde.advertise<sensor_msgs::JointState>("raw/joint_states", 2);
+
+    //initialises joint names (the order is important)
+    jointstate_msg.name.push_back("G_ThumbRotate");
+    jointstate_msg.name.push_back("G_ThumbMPJ");
+    jointstate_msg.name.push_back("G_ThumbIJ");
+    jointstate_msg.name.push_back("G_ThumbAb");
+    jointstate_msg.name.push_back("G_IndexMPJ");
+    jointstate_msg.name.push_back("G_IndexPIJ");
+    jointstate_msg.name.push_back("G_IndexDIJ");
+    jointstate_msg.name.push_back("G_MiddleMPJ");
+    jointstate_msg.name.push_back("G_MiddlePIJ");
+    jointstate_msg.name.push_back("G_MiddleDIJ");
+    jointstate_msg.name.push_back("G_MiddleIndexAb");
+    jointstate_msg.name.push_back("G_RingMPJ");
+    jointstate_msg.name.push_back("G_RingPIJ");
+    jointstate_msg.name.push_back("G_RingDIJ");
+    jointstate_msg.name.push_back("G_RingMiddleAb");
+    jointstate_msg.name.push_back("G_PinkieMPJ");
+    jointstate_msg.name.push_back("G_PinkiePIJ");
+    jointstate_msg.name.push_back("G_PinkieDIJ");
+    jointstate_msg.name.push_back("G_PinkieRingAb");
+    jointstate_msg.name.push_back("G_PalmArch");
+    jointstate_msg.name.push_back("G_WristPitch");
+    jointstate_msg.name.push_back("G_WristYaw");
+
+
     //set sampling frequency
     double sampling_freq;
     n_tilde.param("sampling_frequency", sampling_freq, 100.0);
@@ -250,6 +277,8 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     {
       std::vector<double> glove_calibrated_positions, hand_positions, hand_positions_no_J0;
 
+      jointstate_msg.position.clear();
+
       //fill the joint_state msg with the averaged glove data
       for(unsigned int index_joint = 0; index_joint < CybergloveSerial::glove_size; ++index_joint)
       {
@@ -263,10 +292,11 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
 
 	calibration_tmp = calibration_map->find(glove_sensors_vector_[index_joint]);
 	double calibration_value = calibration_tmp->compute(static_cast<double> (averaged_value));
-	//glove_sensors_vector_[index_joint];
 
+	jointstate_msg.position.push_back(averaged_value);
         glove_calibrated_positions.push_back(calibration_value);
       }
+      cyberglove_raw_pub.publish(jointstate_msg);
 
       publish_counter_index = 0;
       glove_positions.clear();
