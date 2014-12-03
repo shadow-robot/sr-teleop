@@ -338,11 +338,6 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
       //Process J4's
       getAbductionJoints(glove_postions, vect);
 
-      for (size_t i=0; i < vect.size(); i++)
-      {
-        vect[i] = vect[i] * 0.017453292519943295; //convert degrees to radians
-      }
-
       hand_positions = vect;
   }
 
