@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sr_remappers
   trajectory_msgs
+  sr_utilities
 )
 
 ## System dependencies are found with CMake's conventions

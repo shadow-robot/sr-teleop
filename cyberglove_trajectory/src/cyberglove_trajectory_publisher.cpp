@@ -34,9 +34,9 @@
 #include "cyberglove_trajectory/cyberglove_trajectory_publisher.h"
 #include <boost/assign.hpp>
 #include <math.h>
+#include <sr_utilities/sr_math_utils.hpp>
 
 using namespace ros;
-using namespace xml_calibration_parser;
 
 namespace cyberglove{
 
@@ -131,12 +131,7 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     map_calibration_parser.reset(new CalibrationParser(path));
     ROS_INFO("Mapping file loaded for the Cyberglove: %s", path.c_str());
 
-
-    std::string path_to_calibration;
-    n_tilde.param("path_to_calibration", path_to_calibration, std::string("/etc/robot/calibration.d/cyberglove.cal"));
-    ROS_INFO("Calibration file loaded for the Cyberglove: %s", path_to_calibration.c_str());
-
-    initialize_calibration(path_to_calibration);
+    calibration_map.reset(new CalibrationMap(read_joint_calibration()));
 
     std::string searched_param;
     std::string joint_prefix;
@@ -213,11 +208,6 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
   {
   }
 
-  void CybergloveTrajectoryPublisher::initialize_calibration(std::string path_to_calibration)
-  {
-    calibration_parser = XmlCalibrationParser(path_to_calibration);
-  }
-
   bool CybergloveTrajectoryPublisher::isPublishing()
   {
     if (publishing)
@@ -271,8 +261,10 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
         }
         averaged_value /= publish_counter_max;
 
+	calibration_tmp = calibration_map->find(glove_sensors_vector_[index_joint]);
+	double calibration_value = calibration_tmp->compute(static_cast<double> (averaged_value));
+	//glove_sensors_vector_[index_joint];
 
-        float calibration_value = calibration_parser.get_calibration_value(averaged_value, glove_sensors_vector_[index_joint]);
         glove_calibrated_positions.push_back(calibration_value);
       }
 
@@ -303,7 +295,7 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
 
       action_client_->sendGoal(trajectory_goal_);
     }
-    
+
     ros::spinOnce();
   }
 
@@ -381,6 +373,47 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
       hand_positions[7] = -glove_postions[10] + hand_positions[10];
     }
   }
+
+CybergloveTrajectoryPublisher::CalibrationMap CybergloveTrajectoryPublisher::read_joint_calibration()
+{
+  CalibrationMap joint_calibration;
+
+  XmlRpc::XmlRpcValue calib;
+  n_tilde.getParam("cyberglove_calibration", calib);
+  ROS_ASSERT(calib.getType() == XmlRpc::XmlRpcValue::TypeArray);
+  //iterate on all the joints
+  for (int32_t index_cal = 0; index_cal < calib.size(); ++index_cal)
+  {
+    //check the calibration is well formatted:
+    // first joint name, then calibration table
+    ROS_ASSERT(calib[index_cal][0].getType() == XmlRpc::XmlRpcValue::TypeString);
+    ROS_ASSERT(calib[index_cal][1].getType() == XmlRpc::XmlRpcValue::TypeArray);
+
+    string joint_name = static_cast<string> (calib[index_cal][0]);
+    vector<joint_calibration::Point> calib_table_tmp;
+
+    //now iterates on the calibration table for the current joint
+    for (int32_t index_table = 0; index_table < calib[index_cal][1].size(); ++index_table)
+    {
+      ROS_ASSERT(calib[index_cal][1][index_table].getType() == XmlRpc::XmlRpcValue::TypeArray);
+      //only 2 values per calibration point: raw and calibrated (doubles)
+      ROS_ASSERT(calib[index_cal][1][index_table].size() == 2);
+      ROS_ASSERT(calib[index_cal][1][index_table][0].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+      ROS_ASSERT(calib[index_cal][1][index_table][1].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+
+
+      joint_calibration::Point point_tmp;
+      point_tmp.raw_value = static_cast<double> (calib[index_cal][1][index_table][0]);
+      point_tmp.calibrated_value = sr_math_utils::to_rad(static_cast<double> (calib[index_cal][1][index_table][1]));
+      calib_table_tmp.push_back(point_tmp);
+    }
+
+    joint_calibration.insert(joint_name, boost::shared_ptr<shadow_robot::JointCalibration>(new shadow_robot::JointCalibration(calib_table_tmp)));
+  }
+
+  return joint_calibration;
+} //end read_joint_calibration
+
 }// end namespace
 
 
