@@ -308,11 +308,15 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
       //Build and send the goal
 
       trajectory_goal_.trajectory.points.clear();
+      //WARNING if this node runs on a different machine from the trajectory controller, both machines will need to be synchronized
+      // chrony (sudo apt-get install crony) has been used successfully to achieve that
+      // The extra 10ms will allow time for the trajectory to get to the trajectory controller
+      trajectory_goal_.trajectory.header.stamp = ros::Time::now() + ros::Duration(0.010);
 
       trajectory_msgs::JointTrajectoryPoint trajectory_point = trajectory_msgs::JointTrajectoryPoint();
       trajectory_point.positions = hand_positions_no_J0;
       trajectory_point.velocities = std::vector<double>(trajectory_goal_.trajectory.joint_names.size(), 0.0);
-      // We set the time from start to 10 ms, to allow some time to get there
+      // We set the time from start to 10 ms, to allow some time for the hand to get there
       trajectory_point.time_from_start = ros::Duration (0.010);
 
       for (size_t i=0; i < trajectory_point.positions.size(); i++)
