@@ -1,7 +1,7 @@
 <launch>
   <arg name="serial_port" default="/dev/ttyUSB0"/>
   <arg name="joint_prefix" default=""/>
-  <arg name="calibration" default="$(find sr_cyberglove_config)/calibrations/cyberglove.cal"/>
+  <arg name="calibration" default="$(find sr_cyberglove_config)/calibrations/right_cyberglove.yaml"/>
   <arg name="mapping" default="$(find sr_cyberglove_config)/mappings/GloveToHandMappings_generic"/>
   <arg name="version" default="2"/>
 
@@ -17,7 +17,7 @@
     <param name="sampling_frequency" type="double" value="100.0" />
     <param name="publish_frequency" type="double" value="100.0" />
     <param name="path_to_glove" type="string" value="$(arg serial_port)" />
-    <param name="path_to_calibration" type="string" value="$(arg calibration)" />
+    <rosparam command="load" file="$(arg calibration)"/>
     <param name="cyberglove_mapping_path" type="string" value="$(arg mapping)" />
     <param name="joint_prefix" type="string" value="$(arg joint_prefix)" />
     <param name="cyberglove_version" type="string" value="$(arg version)" />

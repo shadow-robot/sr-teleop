@@ -44,13 +44,13 @@
 
 //messages
 #include <sensor_msgs/JointState.h>
-#include "cyberglove/xml_calibration_parser.h"
+#include <sr_utilities/calibration.hpp>
+#include <sr_utilities/thread_safe_map.hpp>
 #include "sr_remappers/calibration_parser.h"
 
 using namespace ros;
 
 namespace cyberglove{
-
   class CybergloveTrajectoryPublisher
   {
   public:
@@ -61,7 +61,18 @@ namespace cyberglove{
     ~CybergloveTrajectoryPublisher();
 
     Publisher cyberglove_pub;
-    void initialize_calibration(std::string path_to_calibration);
+
+    typedef threadsafe::Map<boost::shared_ptr<shadow_robot::JointCalibration> > CalibrationMap;
+
+
+    /**
+     * Reads the calibration from the parameter server.
+     *
+     *
+     * @return a calibration map
+     */
+    CalibrationMap read_joint_calibration();
+
     bool isPublishing();
     void setPublishing(bool value);
   private:
@@ -89,12 +100,15 @@ namespace cyberglove{
     std::string path_to_glove;
     bool publishing;
 
-    ///the calibration parser
-    xml_calibration_parser::XmlCalibrationParser calibration_parser;
+    /// The map used to calibrate each joint.
+    boost::shared_ptr<CalibrationMap> calibration_map;
+    /// A temporary calibration for a given joint.
+    boost::shared_ptr<shadow_robot::JointCalibration> calibration_tmp;
     ///the calibration parser containing the mapping matrix
     boost::scoped_ptr<CalibrationParser> map_calibration_parser;
 
     Publisher cyberglove_raw_pub;
+    sensor_msgs::JointState jointstate_msg;
 
 
     std::vector<float> calibration_values;
