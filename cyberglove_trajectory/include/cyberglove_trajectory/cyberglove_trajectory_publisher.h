@@ -136,6 +136,8 @@ namespace cyberglove{
     control_msgs::FollowJointTrajectoryGoal trajectory_goal_;
 
     std::string cyberglove_version_;
+
+    ros::Duration trajectory_delay_;
   }; // end class CybergloveTrajectoryPublisher
 
 } // end namespace
