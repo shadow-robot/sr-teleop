@@ -369,43 +369,54 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
 
   void CybergloveTrajectoryPublisher::getAbductionJoints(const std::vector<double>& glove_postions, std::vector<double>& hand_positions)
   {
+    double middleIndexAb = glove_postions[10];
+    double ringMiddleAb = glove_postions[14];
+    double pinkieRingAb = glove_postions[18];
+
+    // if the abduction sensors are less than 0, it is an artifact of the calibration (we don't want to consider anything smaller than 0 for these sensors)
+    if (middleIndexAb < 0.0)
+      middleIndexAb = 0.0;
+    if (ringMiddleAb < 0.0)
+      ringMiddleAb = 0.0;
+    if (pinkieRingAb < 0.0)
+      pinkieRingAb = 0.0;
     //Add the 3 abduction angles to have an idea of where the centre lies
-    double ab_total = glove_postions[10] + glove_postions[14] +  glove_postions[18];
+    double ab_total = middleIndexAb + ringMiddleAb +  pinkieRingAb;
 
     //When trying to understand this code bear in mind that the abduction sign convention
     // in the shadow hand is the opposite for ff and mf than for rf and lf.
-    if (ab_total/2 < glove_postions[10]) // If the centre lies between ff and mf
+    if (ab_total/2 < middleIndexAb) // If the centre lies between ff and mf
     {
       //FFJ4
       hand_positions[7] = -ab_total/2;
       //MFJ4
-      hand_positions[10] = glove_postions[10] - ab_total/2;
+      hand_positions[10] = middleIndexAb - ab_total/2;
       //RFJ4
-      hand_positions[13] = -(glove_postions[14] + hand_positions[10]);
+      hand_positions[13] = -(ringMiddleAb + hand_positions[10]);
       //LFJ4
-      hand_positions[16] = -glove_postions[18] + hand_positions[13];
+      hand_positions[16] = -pinkieRingAb + hand_positions[13];
     }
-    else if (ab_total/2 < glove_postions[10] + glove_postions[14]) // If the centre lies between mf and rf
+    else if (ab_total/2 < middleIndexAb + ringMiddleAb) // If the centre lies between mf and rf
     {
       //MFJ4
-      hand_positions[10] = -(ab_total/2 - glove_postions[10]);
+      hand_positions[10] = -(ab_total/2 - middleIndexAb);
       //FFJ4
-      hand_positions[7] = -glove_postions[10] + hand_positions[10];
+      hand_positions[7] = -middleIndexAb + hand_positions[10];
       //RFJ4
-      hand_positions[13] = -(glove_postions[14] + hand_positions[10]);
+      hand_positions[13] = -(ringMiddleAb + hand_positions[10]);
       //LFJ4
-      hand_positions[16] = -glove_postions[18] + hand_positions[13];
+      hand_positions[16] = -pinkieRingAb + hand_positions[13];
     }
     else // If the centre lies between rf and lf
     {
       //LFJ4
       hand_positions[16] = -ab_total/2;
       //RFJ4
-      hand_positions[13] = glove_postions[18] + hand_positions[16];
+      hand_positions[13] = pinkieRingAb + hand_positions[16];
       //MFJ4
-      hand_positions[10] = -(glove_postions[14] + hand_positions[13]);
+      hand_positions[10] = -(ringMiddleAb + hand_positions[13]);
       //FFJ4
-      hand_positions[7] = -glove_postions[10] + hand_positions[10];
+      hand_positions[7] = -middleIndexAb + hand_positions[10];
     }
   }
 
