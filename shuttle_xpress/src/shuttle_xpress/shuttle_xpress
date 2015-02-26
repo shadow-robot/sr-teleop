@@ -30,7 +30,7 @@ class ShuttleXpressUsb(object):
     __state = ShuttleXpress()
 
     def __init__(self):
-
+        self._pub = rospy.Publisher("~state", ShuttleXpress)
         self.grab_device()
         self.read_data()
         self.release_device()
@@ -99,7 +99,7 @@ class ShuttleXpressUsb(object):
         else:
             self.__state.buttons[4] = False
 
-        print self.__state
+        self._pub.publish(self.__state)
 
     def __check_btn(self, raw_data, btn_index):
         """
