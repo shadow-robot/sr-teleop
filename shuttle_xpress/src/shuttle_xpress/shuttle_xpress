@@ -22,7 +22,7 @@ from geometry_msgs.msg import Twist
 CONTOUR_ID_VENDOR = 0x0b33
 CONTOUR_ID_PRODUCT = 0x0020
 
-class ShuttleXpress(object):
+class ShuttleXpressUsb(object):
     """
     Usb driver for the Contour Shuttle Xpress.
     """
@@ -83,5 +83,5 @@ class ShuttleXpress(object):
 
 if __name__ == "__main__":
     rospy.init_node("shuttle_xpress")
-    ShuttleXpress()
+    ShuttleXpressUsb()
     rospy.spin()
