@@ -15,17 +15,21 @@ import usb.core, usb.util
 from sys import exit as sysexit
 
 import rospy
+from shuttle_xpress.msg import ShuttleXpress
+from geometry_msgs.msg import Twist
+
 
 CONTOUR_ID_VENDOR = 0x0b33
 CONTOUR_ID_PRODUCT = 0x0020
 
 class ShuttleXpress(object):
     """
-        Usb driver for the Contour Shuttle Xpress
+    Usb driver for the Contour Shuttle Xpress.
     """
 
     __device = None
     __interface = 0
+    __state = ShuttleXpress()
 
     def __init__(self):
 
@@ -72,6 +76,7 @@ class ShuttleXpress(object):
                 data = self.__device.read(endpoint.bEndpointAddress,
                                           endpoint.wMaxPacketSize)
                 rospy.loginfo(" read value: "+ str(data))
+
             except usb.core.USBError:
                 rospy.logdebug("Reader timedout - no events received.")
 
