@@ -77,9 +77,40 @@ class ShuttleXpressUsb(object):
                                           endpoint.wMaxPacketSize)
                 rospy.loginfo(" read value: "+ str(data))
 
+                self._fill_state(data)
             except usb.core.USBError:
                 rospy.logdebug("Reader timedout - no events received.")
 
+    def _fill_state(self, data):
+        """
+        Fills the self.__state properly from the raw data.
+        """
+        self.__state.shuttle_wheel = data[0]
+        self.__state.rotating_dial = data[1]
+
+        # the first for buttons are using binary bit masks
+        for i in range(4):
+            if self.__check_btn(data[3], i):
+                self.__state.buttons[i] = True
+            else:
+                self.__state.buttons[i] = False
+
+        # the last button is in the last data - not using a bit check
+        if data[4]:
+            self.__state.buttons[4] = True
+        else:
+            self.__state.buttons[4] = False
+
+        print self.__state
+
+    def __check_btn(self, raw_data, btn_index):
+        """
+        returns a positive value if the bit at btn_index in raw_data is set.
+        """
+        raw_data = raw_data >> 4 # for some reason the buttons start at bit 4
+        btn_index = 1 << btn_index
+
+        return raw_data & btn_index
 
 if __name__ == "__main__":
     rospy.init_node("shuttle_xpress")
