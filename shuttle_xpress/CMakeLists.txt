@@ -5,7 +5,6 @@ project(shuttle_xpress)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
   rospy
   message_generation
 )
@@ -66,7 +65,6 @@ add_message_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  geometry_msgs
 )
 
 ###################################
@@ -81,7 +79,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES shuttle_xpress
-  CATKIN_DEPENDS geometry_msgs rospy message_runtime
+  CATKIN_DEPENDS rospy message_runtime
 #  DEPENDS system_lib
 )
 

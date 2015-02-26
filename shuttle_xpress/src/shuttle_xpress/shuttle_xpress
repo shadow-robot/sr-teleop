@@ -16,8 +16,6 @@ from sys import exit as sysexit
 
 import rospy
 from shuttle_xpress.msg import ShuttleXpress
-from geometry_msgs.msg import Twist
-
 
 CONTOUR_ID_VENDOR = 0x0b33
 CONTOUR_ID_PRODUCT = 0x0020
