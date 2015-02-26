@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+# ####################################################################
+# Copyright (c) 2013 Shadow Robot Company Ltd.
+# All rights reserved.
+# This code is proprietary and may not be used, copied, distributed without
+# prior authorisation and agreement from Shadow Robot Company Ltd. *
+# ####################################################################
+
+"""
+see README.md
+"""
+
+import usb.core, usb.util
+from sys import exit as sysexit
+
+import rospy
+
+CONTOUR_ID_VENDOR = 0x0b33
+CONTOUR_ID_PRODUCT = 0x0020
+
+class ShuttleXpress(object):
+    """
+        Usb driver for the Contour Shuttle Xpress
+    """
+
+    __device = None
+    __interface = 0
+
+    def __init__(self):
+
+        self.grab_device()
+        self.read_data()
+        self.release_device()
+
+    def grab_device(self):
+        """
+        Grabs the usb device.
+        """
+        self.__device = usb.core.find(idVendor=CONTOUR_ID_VENDOR,
+                                      idProduct=CONTOUR_ID_PRODUCT)
+
+        if self.__device is None:
+            raise ValueError("Contour Shuttle Xpress was not found")
+
+        if self.__device.is_kernel_driver_active(self.__interface):
+            rospy.loginfo("Kernel driver attached - trying to detach the driver.")
+            try:
+                self.__device.detach_kernel_driver(self.__interface)
+                rospy.loginfo("kernel driver detached")
+            except usb.core.USBError as usb_exc:
+                sysexit("Could not detach kernel driver: %s" %str(usb_exc))
+
+        self.__device.set_configuration()
+        usb.util.claim_interface(self.__device, self.__interface)
+
+    def release_device(self):
+        """
+        Releases the devices and reattaches the kernel driver if necessary.
+        """
+        usb.util.release_interface(self.__device, self.__interface)
+        self.__device.attach_kernel_driver(self.__interface)
+
+    def read_data(self):
+        """
+        Reads the data - called from a thread.
+        """
+        #Reading the data
+        endpoint = self.__device[0][(0, 0)][0]
+        while not rospy.is_shutdown():
+            try:
+                data = self.__device.read(endpoint.bEndpointAddress,
+                                          endpoint.wMaxPacketSize)
+                rospy.loginfo(" read value: "+ str(data))
+            except usb.core.USBError:
+                rospy.logdebug("Reader timedout - no events received.")
+
+
+if __name__ == "__main__":
+    rospy.init_node("shuttle_xpress")
+    ShuttleXpress()
+    rospy.spin()
