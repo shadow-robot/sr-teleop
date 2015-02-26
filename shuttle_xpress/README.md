@@ -4,6 +4,10 @@ This is a driver for the Contour Shuttle Xpress controller.
 
 I took some inspiration from this [link](http://www.orangecoat.com/how-to/read-and-decode-data-from-your-mouse-using-this-pyusb-hack)
 
+## ROS communication
+
+This node simply publishes a **~state** topic of the type **shuttle_xpress/ShuttleExpress.msg**.
+
 ## Install
 
 ### Proper pyusb version
