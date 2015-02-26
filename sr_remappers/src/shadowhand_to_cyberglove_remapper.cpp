@@ -124,43 +124,55 @@ void ShadowhandToCybergloveRemapper::jointstatesCallback( const sensor_msgs::Joi
 
 void ShadowhandToCybergloveRemapper::getAbductionJoints( const sensor_msgs::JointStateConstPtr& msg, std::vector<double>& vect)
 {
+  double middleIndexAb = msg->position[10];
+  double ringMiddleAb = msg->position[14];
+  double pinkieRingAb = msg->position[18];
+
+  // if the abduction sensors are less than 0, it is an artifact of the calibration (we don't want to consider anything smaller than 0 for these sensors)
+  if (middleIndexAb < 0.0)
+    middleIndexAb = 0.0;
+  if (ringMiddleAb < 0.0)
+    ringMiddleAb = 0.0;
+  if (pinkieRingAb < 0.0)
+    pinkieRingAb = 0.0;
+
   //Add the 3 abduction angles to have an idea of where the centre lies
-  double ab_total = msg->position[10] + msg->position[14] +  msg->position[18];
+  double ab_total = middleIndexAb + ringMiddleAb +  pinkieRingAb;
 
   //When trying to understand this code bear in mind that the abduction sign convention
   // in the shadow hand is the opposite for ff and mf than for rf and lf.
-  if (ab_total/2 < msg->position[10]) // If the centre lies between ff and mf
+  if (ab_total/2 < middleIndexAb) // If the centre lies between ff and mf
   {
     //FFJ4
     vect[7] = -ab_total/2;
     //MFJ4
-    vect[10] = msg->position[10] - ab_total/2;
+    vect[10] = middleIndexAb - ab_total/2;
     //RFJ4
-    vect[13] = -(msg->position[14] + vect[10]);
+    vect[13] = -(ringMiddleAb + vect[10]);
     //LFJ4
-    vect[16] = -msg->position[18] + vect[13];
+    vect[16] = -pinkieRingAb + vect[13];
   }
-  else if (ab_total/2 < msg->position[10] + msg->position[14]) // If the centre lies between mf and rf
+  else if (ab_total/2 < middleIndexAb + ringMiddleAb) // If the centre lies between mf and rf
   {
     //MFJ4
-    vect[10] = -(ab_total/2 - msg->position[10]);
+    vect[10] = -(ab_total/2 - middleIndexAb);
     //FFJ4
-    vect[7] = -msg->position[10] + vect[10];
+    vect[7] = -middleIndexAb + vect[10];
     //RFJ4
-    vect[13] = -(msg->position[14] + vect[10]);
+    vect[13] = -(ringMiddleAb + vect[10]);
     //LFJ4
-    vect[16] = -msg->position[18] + vect[13];
+    vect[16] = -pinkieRingAb + vect[13];
   }
   else // If the centre lies between rf and lf
   {
     //LFJ4
     vect[16] = -ab_total/2;
     //RFJ4
-    vect[13] = msg->position[18] + vect[16];
+    vect[13] = pinkieRingAb + vect[16];
     //MFJ4
-    vect[10] = -(msg->position[14] + vect[13]);
+    vect[10] = -(ringMiddleAb + vect[13]);
     //FFJ4
-    vect[7] = -msg->position[10] + vect[10];
+    vect[7] = -middleIndexAb + vect[10];
   }
 }
 }//end namespace
