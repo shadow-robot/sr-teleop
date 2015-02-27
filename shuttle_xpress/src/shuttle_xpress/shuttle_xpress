@@ -30,7 +30,7 @@ class ShuttleXpressUsb(object):
     __state = ShuttleXpress()
 
     def __init__(self):
-        self._pub = rospy.Publisher("~state", ShuttleXpress)
+        self._pub = rospy.Publisher("~state", ShuttleXpress, queue_size=1)
         self.grab_device()
         self.read_data()
         self.release_device()
@@ -83,7 +83,11 @@ class ShuttleXpressUsb(object):
         """
         Fills the self.__state properly from the raw data.
         """
-        self.__state.shuttle_wheel = data[0]
+        wheel = data[0]
+        if wheel > 127:
+            wheel -= 255
+
+        self.__state.shuttle_wheel = wheel
         self.__state.rotating_dial = data[1]
 
         # the first for buttons are using binary bit masks
