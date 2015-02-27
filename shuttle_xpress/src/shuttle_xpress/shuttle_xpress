@@ -13,6 +13,7 @@ see README.md
 
 import usb.core, usb.util
 from sys import exit as sysexit
+from time import sleep
 
 import rospy
 from shuttle_xpress.msg import ShuttleXpress
@@ -23,6 +24,13 @@ CONTOUR_ID_PRODUCT = 0x0020
 class ShuttleXpressUsb(object):
     """
     Usb driver for the Contour Shuttle Xpress.
+
+    In order to properly detach the device at the end
+    it is strongly suggested to use this class like this:
+
+    from shuttle_xpress import ShuttleXpressUsb
+    with ShuttleXpressUsb() as shuttle:
+
     """
 
     __device = None
@@ -31,8 +39,21 @@ class ShuttleXpressUsb(object):
 
     def __init__(self):
         self._pub = rospy.Publisher("~state", ShuttleXpress, queue_size=1)
-        self.grab_device()
+
+        for _ in range(10):
+            try:
+                self.grab_device()
+                break
+            except usb.core.USBError:
+                rospy.logdebug("Trying to grab the device once more.")
+                sleep(0.1)
+
         self.read_data()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
         self.release_device()
 
     def grab_device(self):
@@ -46,10 +67,10 @@ class ShuttleXpressUsb(object):
             raise ValueError("Contour Shuttle Xpress was not found")
 
         if self.__device.is_kernel_driver_active(self.__interface):
-            rospy.loginfo("Kernel driver attached - trying to detach the driver.")
+            rospy.logdebug("Kernel driver attached - trying to detach the driver.")
             try:
                 self.__device.detach_kernel_driver(self.__interface)
-                rospy.loginfo("kernel driver detached")
+                rospy.logdebug("kernel driver detached")
             except usb.core.USBError as usb_exc:
                 sysexit("Could not detach kernel driver: %s" %str(usb_exc))
 
@@ -60,8 +81,11 @@ class ShuttleXpressUsb(object):
         """
         Releases the devices and reattaches the kernel driver if necessary.
         """
-        usb.util.release_interface(self.__device, self.__interface)
-        self.__device.attach_kernel_driver(self.__interface)
+        try:
+            usb.util.release_interface(self.__device, self.__interface)
+            self.__device.attach_kernel_driver(self.__interface)
+        except usb.core.USBError:
+            rospy.logwarn("Didn't reattach the kernel driver properly.")
 
     def read_data(self):
         """
@@ -73,7 +97,6 @@ class ShuttleXpressUsb(object):
             try:
                 data = self.__device.read(endpoint.bEndpointAddress,
                                           endpoint.wMaxPacketSize)
-                rospy.loginfo(" read value: "+ str(data))
 
                 self._fill_state(data)
             except usb.core.USBError:
@@ -116,5 +139,6 @@ class ShuttleXpressUsb(object):
 
 if __name__ == "__main__":
     rospy.init_node("shuttle_xpress")
-    ShuttleXpressUsb()
-    rospy.spin()
+
+    with ShuttleXpressUsb() as shuttle:
+        rospy.spin()
