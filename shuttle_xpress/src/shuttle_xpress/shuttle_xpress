@@ -85,7 +85,7 @@ class ShuttleXpressUsb(object):
         """
         wheel = data[0]
         if wheel > 127:
-            wheel -= 255
+            wheel -= 254
 
         self.__state.shuttle_wheel = wheel
         self.__state.rotating_dial = data[1]
