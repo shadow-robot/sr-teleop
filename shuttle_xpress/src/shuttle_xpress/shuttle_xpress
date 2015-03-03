@@ -105,8 +105,9 @@ class ShuttleXpressUsb(object):
         Fills the self.__state properly from the raw data.
         """
         wheel = data[0]
+
         if wheel > 127:
-            wheel -= 254
+            wheel -= 256
 
         self.__state.shuttle_wheel = wheel
         self.__state.rotating_dial = data[1]
