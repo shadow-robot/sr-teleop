@@ -1,0 +1,142 @@
+#!/usr/bin/env python
+
+# ####################################################################
+# Copyright (c) 2013 Shadow Robot Company Ltd.
+# All rights reserved.
+# This code is proprietary and may not be used, copied, distributed without
+# prior authorisation and agreement from Shadow Robot Company Ltd. *
+# ####################################################################
+
+"""
+see README.md
+"""
+
+import usb.core, usb.util
+from sys import exit as sysexit
+from time import sleep
+
+import rospy
+from shuttle_xpress.msg import ShuttleXpress
+
+CONTOUR_ID_VENDOR = 0x0b33
+CONTOUR_ID_PRODUCT = 0x0020
+
+class ShuttleXpressUsb(object):
+    """
+    Usb driver for the Contour Shuttle Xpress.
+
+    In order to properly detach the device at the end
+    it is strongly suggested to use this class like this:
+
+    from shuttle_xpress import ShuttleXpressUsb
+    with ShuttleXpressUsb() as shuttle:
+        shuttle.read_data()
+    """
+
+    __device = None
+    __interface = 0
+    __state = ShuttleXpress()
+
+    def __init__(self):
+        self._pub = rospy.Publisher("~state", ShuttleXpress, queue_size=1)
+
+        for _ in range(10):
+            try:
+                self.grab_device()
+                break
+            except usb.core.USBError:
+                rospy.logdebug("Trying to grab the device once more.")
+                sleep(0.1)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.release_device()
+
+    def grab_device(self):
+        """
+        Grabs the usb device.
+        """
+        self.__device = usb.core.find(idVendor=CONTOUR_ID_VENDOR,
+                                      idProduct=CONTOUR_ID_PRODUCT)
+
+        if self.__device is None:
+            raise ValueError("Contour Shuttle Xpress was not found")
+
+        if self.__device.is_kernel_driver_active(self.__interface):
+            rospy.logdebug("Kernel driver attached - trying to detach the driver.")
+            try:
+                self.__device.detach_kernel_driver(self.__interface)
+                rospy.logdebug("kernel driver detached")
+            except usb.core.USBError as usb_exc:
+                sysexit("Could not detach kernel driver: %s" %str(usb_exc))
+
+        self.__device.set_configuration()
+        usb.util.claim_interface(self.__device, self.__interface)
+
+    def release_device(self):
+        """
+        Releases the devices and reattaches the kernel driver if necessary.
+        """
+        try:
+            usb.util.release_interface(self.__device, self.__interface)
+            self.__device.attach_kernel_driver(self.__interface)
+        except usb.core.USBError:
+            rospy.logwarn("Didn't reattach the kernel driver properly.")
+
+    def read_data(self):
+        """
+        Reads the data - called from a thread.
+        """
+        #Reading the data
+        endpoint = self.__device[0][(0, 0)][0]
+        while not rospy.is_shutdown():
+            try:
+                data = self.__device.read(endpoint.bEndpointAddress,
+                                          endpoint.wMaxPacketSize)
+
+                self._fill_state(data)
+            except usb.core.USBError:
+                rospy.logdebug("Reader timedout - no events received.")
+
+    def _fill_state(self, data):
+        """
+        Fills the self.__state properly from the raw data.
+        """
+        wheel = data[0]
+        if wheel > 127:
+            wheel -= 254
+
+        self.__state.shuttle_wheel = wheel
+        self.__state.rotating_dial = data[1]
+
+        # the first four buttons are using binary bit masks
+        for i in range(4):
+            if self.__check_btn(data[3], i):
+                self.__state.buttons[i] = True
+            else:
+                self.__state.buttons[i] = False
+
+        # the last button is in the last data - not using a bit check
+        if data[4]:
+            self.__state.buttons[4] = True
+        else:
+            self.__state.buttons[4] = False
+
+        self._pub.publish(self.__state)
+
+    def __check_btn(self, raw_data, btn_index):
+        """
+        returns a positive value if the bit at btn_index in raw_data is set.
+        """
+        raw_data = raw_data >> 4 # for some reason the buttons start at bit 4
+        btn_index = 1 << btn_index
+
+        return raw_data & btn_index
+
+if __name__ == "__main__":
+    rospy.init_node("shuttle_xpress")
+
+    with ShuttleXpressUsb() as shuttle:
+        shuttle.read_data()
