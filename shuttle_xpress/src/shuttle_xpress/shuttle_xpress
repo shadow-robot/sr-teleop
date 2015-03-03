@@ -30,7 +30,7 @@ class ShuttleXpressUsb(object):
 
     from shuttle_xpress import ShuttleXpressUsb
     with ShuttleXpressUsb() as shuttle:
-
+        shuttle.read_data()
     """
 
     __device = None
@@ -47,8 +47,6 @@ class ShuttleXpressUsb(object):
             except usb.core.USBError:
                 rospy.logdebug("Trying to grab the device once more.")
                 sleep(0.1)
-
-        self.read_data()
 
     def __enter__(self):
         return self
@@ -113,7 +111,7 @@ class ShuttleXpressUsb(object):
         self.__state.shuttle_wheel = wheel
         self.__state.rotating_dial = data[1]
 
-        # the first for buttons are using binary bit masks
+        # the first four buttons are using binary bit masks
         for i in range(4):
             if self.__check_btn(data[3], i):
                 self.__state.buttons[i] = True
@@ -141,4 +139,4 @@ if __name__ == "__main__":
     rospy.init_node("shuttle_xpress")
 
     with ShuttleXpressUsb() as shuttle:
-        rospy.spin()
+        shuttle.read_data()
