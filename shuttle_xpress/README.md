@@ -33,3 +33,8 @@ sudo nano /etc/udev/rules.d/89-shuttle-xpress.rules
 ```
 ATTRS{idProduct}=="0020", ATTRS{idVendor}=="0b33", MODE="666", GROUP="plugdev"
 ```
+
+- Reload the rules without rebooting:
+```
+sudo udevadm trigger
+```
