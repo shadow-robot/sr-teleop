@@ -31,7 +31,7 @@ sudo nano /etc/udev/rules.d/89-logitech-r400.rules
 - Add the following udev rule to that file:
 
 ```
-ATTRS{idProduct}=="0111 ", ATTRS{idVendor}=="0e00", MODE="666", GROUP="plugdev"
+ATTRS{idProduct}=="0111", ATTRS{idVendor}=="0e00", MODE="666", GROUP="plugdev"
 ```
 
 - Reload the rules without rebooting:
