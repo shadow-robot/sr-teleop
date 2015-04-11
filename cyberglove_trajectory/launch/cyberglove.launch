@@ -4,6 +4,10 @@
   <arg name="calibration" default="$(find sr_cyberglove_config)/calibrations/right_cyberglove.yaml"/>
   <arg name="mapping" default="$(find sr_cyberglove_config)/mappings/GloveToHandMappings_generic"/>
   <arg name="version" default="2"/>
+  <!-- offset in second to set the trajectory time stamp. It must be grater than the time it takes for the trajectory goal msg to reach the trajectory controller -->
+  <arg name="trajectory_tx_delay" default="0.040"/>
+  <!-- this is the delay from the beginning of the trajectory. I.e. the time_from_start of the single trajectory point -->
+  <arg name="trajectory_delay" default="0.002"/>
 
   <node pkg="cyberglove_trajectory" name="$(arg joint_prefix)cyberglove" type="cyberglove_trajectory">
     <!-- We're doing some oversampling. You can set the frequency at which
@@ -21,5 +25,7 @@
     <param name="cyberglove_mapping_path" type="string" value="$(arg mapping)" />
     <param name="joint_prefix" type="string" value="$(arg joint_prefix)" />
     <param name="cyberglove_version" type="string" value="$(arg version)" />
+    <param name="trajectory_delay" type="double" value="$(arg trajectory_delay)" />
+    <param name="trajectory_tx_delay" type="double" value="$(arg trajectory_tx_delay)" />
   </node>
 </launch>

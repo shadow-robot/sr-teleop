@@ -193,10 +193,17 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     n_tilde.param("path_to_glove", path_to_glove, std::string("/dev/ttyS0"));
     ROS_INFO("Opening glove on port: %s", path_to_glove.c_str());
 
-    //set trajectory delay: the delay it takes to get to the trajectory controller.
+    //set trajectory tx delay: the delay it takes to get to the trajectory controller.
     // it is used to set the timestamp of the trajectory goal. 10ms default
+    // (the trajectory point might be discarded if the trajectory arrives later)
     double delay;
-    n_tilde.param("trajectory_delay", delay, 0.01);
+    n_tilde.param("trajectory_tx_delay", delay, 0.01);
+    trajectory_tx_delay_ = ros::Duration(delay);
+
+    //set trajectory delay: the delay from the trajectory beginning to the trajectory point.
+    // it is used to set the time_from start of the single trajectory point. 2ms default
+    // (it can be very small, but not zero, or the point will be discarded as past).
+    n_tilde.param("trajectory_delay", delay, 0.002);
     trajectory_delay_ = ros::Duration(delay);
 
     //initialize the connection with the cyberglove and binds the callback function
@@ -317,7 +324,7 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
       //WARNING if this node runs on a different machine from the trajectory controller, both machines will need to be synchronized
       // chrony (sudo apt-get install crony) has been used successfully to achieve that
       // The extra 10ms will allow time for the trajectory to get to the trajectory controller
-      trajectory_goal_.trajectory.header.stamp = ros::Time::now() + trajectory_delay_;
+      trajectory_goal_.trajectory.header.stamp = ros::Time::now() + trajectory_tx_delay_;
 
       trajectory_msgs::JointTrajectoryPoint trajectory_point = trajectory_msgs::JointTrajectoryPoint();
       trajectory_point.positions = hand_positions_no_J0;
