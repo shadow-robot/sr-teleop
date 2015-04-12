@@ -112,7 +112,7 @@ namespace cyberglove
      * @param callback a pointer to a callback function, which will be called each time a
      *                 complete joint message is received.
      */
-    CybergloveSerial(std::string serial_port, std::string cyberglove_version, boost::function<void(std::vector<float>, bool)> callback);
+    CybergloveSerial(std::string serial_port, std::string cyberglove_version, std::string streaming_protocol, boost::function<void(std::vector<float>, bool)> callback);
     ~CybergloveSerial();
 
     /**
@@ -203,6 +203,7 @@ namespace cyberglove
     bool no_errors;
 
     std::string cyberglove_version_;
+    std::string streaming_protocol_;
 
     reception_state reception_state_;
   };

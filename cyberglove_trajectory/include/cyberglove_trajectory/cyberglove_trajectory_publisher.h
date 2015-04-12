@@ -136,6 +136,7 @@ namespace cyberglove{
     control_msgs::FollowJointTrajectoryGoal trajectory_goal_;
 
     std::string cyberglove_version_;
+    std::string streaming_protocol_;
 
     ros::Duration trajectory_tx_delay_;
     ros::Duration trajectory_delay_;

@@ -98,6 +98,7 @@ namespace cyberglove{
     std::vector<std::vector<float> > glove_positions;
 
     std::string cyberglove_version_;
+    std::string streaming_protocol_;
   }; // end class CyberglovePublisher
 
 } // end namespace
