@@ -18,8 +18,11 @@ from time import sleep
 import rospy
 from logitech_r400.msg import LogitechR400
 
-CONTOUR_ID_VENDOR = 0x0e00
-CONTOUR_ID_PRODUCT = 0x0111
+R400_ID_VENDOR = 0x0e00
+R400_ID_PRODUCT = 0x0111
+# we have found 2 different types of values for R400
+R400_ID_VENDOR_2 = 0x046d
+R400_ID_PRODUCT_2 = 0xc538
 
 class LogitechR400Usb(object):
     """
@@ -33,55 +36,73 @@ class LogitechR400Usb(object):
         pointer.read_data()
     """
 
-    __device = None
     __interface = 0
-    __state = LogitechR400()
-
+    
     def __init__(self):
-        self._pub = rospy.Publisher("~state", LogitechR400, queue_size=1)
-
+        self._devices = self.find_devices()
+        self._state = []
+        self._pubs = []
+        if not self._devices:
+            raise ValueError("Logitech R400 was not found")
+        
         for _ in range(10):
             try:
-                self.grab_device()
+                for device in self._devices:
+                    self.grab_device(device)
                 break
             except usb.core.USBError:
                 rospy.logdebug("Trying to grab the device once more.")
                 sleep(0.1)
+                
+        for i in range(len(self._devices)):
+            suffix = "" if i == 0 else ("_" + str(i))
+            self._pubs.append(rospy.Publisher("~state" + suffix, LogitechR400, queue_size=1))
+            self._state.append(LogitechR400())
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.release_device()
+        for device in self._devices:
+            self.release_device(device)
 
-    def grab_device(self):
+    def is_R400(self, dev):
+        if (dev.idVendor == R400_ID_VENDOR and dev.idProduct == R400_ID_PRODUCT) \
+           or (dev.idVendor == R400_ID_VENDOR_2 and dev.idProduct == R400_ID_PRODUCT_2):
+            return True
+        return False
+
+    def find_devices(self):
+        """
+        Finds the usb devices in the system.
+        """
+        
+        devices = list(usb.core.find(find_all=True, custom_match=self.is_R400))
+        return devices
+
+    def grab_device(self, device):
         """
         Grabs the usb device.
         """
-        self.__device = usb.core.find(idVendor=CONTOUR_ID_VENDOR,
-                                      idProduct=CONTOUR_ID_PRODUCT)
 
-        if self.__device is None:
-            raise ValueError("Logitech R400 was not found")
-
-        if self.__device.is_kernel_driver_active(self.__interface):
+        if device.is_kernel_driver_active(self.__interface):
             rospy.logdebug("Kernel driver attached - trying to detach the driver.")
             try:
-                self.__device.detach_kernel_driver(self.__interface)
+                device.detach_kernel_driver(self.__interface)
                 rospy.logdebug("kernel driver detached")
             except usb.core.USBError as usb_exc:
                 sysexit("Could not detach kernel driver: %s" %str(usb_exc))
 
-        self.__device.set_configuration()
-        usb.util.claim_interface(self.__device, self.__interface)
+        device.set_configuration()
+        usb.util.claim_interface(device, self.__interface)
 
-    def release_device(self):
+    def release_device(self, device):
         """
         Releases the devices and reattaches the kernel driver if necessary.
         """
         try:
-            usb.util.release_interface(self.__device, self.__interface)
-            self.__device.attach_kernel_driver(self.__interface)
+            usb.util.release_interface(device, self.__interface)
+            device.attach_kernel_driver(self.__interface)
         except usb.core.USBError:
             rospy.logwarn("Didn't reattach the kernel driver properly.")
 
@@ -90,19 +111,22 @@ class LogitechR400Usb(object):
         Reads the data - called from a thread.
         """
         #Reading the data
-        endpoint = self.__device[0][(0, 0)][0]
+        endpoint = []
+        for i, device in enumerate(self._devices):
+            endpoint.append(device[0][(0, 0)][0])
         while not rospy.is_shutdown():
-            try:
-                data = self.__device.read(endpoint.bEndpointAddress,
-                                          endpoint.wMaxPacketSize)
+            for i, device in enumerate(self._devices):
+                try:
+                    data = device.read(endpoint[i].bEndpointAddress,
+                                              endpoint[i].wMaxPacketSize)
+    
+                    self._fill_state(i, data)
+                except usb.core.USBError:
+                    rospy.logdebug("Reader timedout - no events received.")
 
-                self._fill_state(data)
-            except usb.core.USBError:
-                rospy.logdebug("Reader timedout - no events received.")
-
-    def _fill_state(self, data):
+    def _fill_state(self, index, data):
         """
-        Fills the self.__state properly from the raw data.
+        Fills the self._state properly from the raw data.
         """
         
 #         print "DATA: "
@@ -111,24 +135,25 @@ class LogitechR400Usb(object):
 #             print "{:X}\n".format(d)
             
         
-        self.__state.buttons = [False] * 5
+        self._state[index].buttons = [False] * 5
             
         if data[2] == 0x4e:
-            self.__state.buttons[0] = True
+            self._state[index].buttons[0] = True
         elif data[2] == 0x4b:
-            self.__state.buttons[1] = True
+            self._state[index].buttons[1] = True
         elif data[2] == 0x05:
-            self.__state.buttons[2] = True
+            self._state[index].buttons[2] = True
         elif data[2] == 0x3e:
-            self.__state.buttons[3] = True
+            self._state[index].buttons[3] = True
         elif data[2] == 0x29:
-            self.__state.buttons[4] = True
+            self._state[index].buttons[4] = True
             
-        self._pub.publish(self.__state)
+        self._pubs[index].publish(self._state[index])
 
 
 if __name__ == "__main__":
     rospy.init_node("logitech_r400")
+    rospy.loginfo("Initialized logitech_r400 node")
 
     with LogitechR400Usb() as pointer:
         pointer.read_data()
