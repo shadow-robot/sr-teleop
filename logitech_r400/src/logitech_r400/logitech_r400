@@ -11,12 +11,12 @@
 see README.md
 """
 
-import usb.core, usb.util
+from logitech_r400.msg import LogitechR400
+import rospy
 from sys import exit as sysexit
 from time import sleep
+import usb.core, usb.util
 
-import rospy
-from logitech_r400.msg import LogitechR400
 
 R400_ID_VENDOR = 0x0e00
 R400_ID_PRODUCT = 0x0111
@@ -37,26 +37,26 @@ class LogitechR400Usb(object):
     """
 
     __interface = 0
-    
+
     def __init__(self):
         self._devices = self.find_devices()
         self._state = []
         self._pubs = []
         if not self._devices:
             raise ValueError("Logitech R400 was not found")
-        
-        for _ in range(10):
-            try:
-                for device in self._devices:
+
+        for device in self._devices:
+            for _ in range(10):
+                try:
                     self.grab_device(device)
-                break
-            except usb.core.USBError:
-                rospy.logdebug("Trying to grab the device once more.")
-                sleep(0.1)
-                
+                    break
+                except usb.core.USBError:
+                    rospy.logdebug("Trying to grab the device once more.")
+                    sleep(0.1)
+
         for i in range(len(self._devices)):
             suffix = "" if i == 0 else ("_" + str(i))
-            self._pubs.append(rospy.Publisher("~state" + suffix, LogitechR400, queue_size=1))
+            self._pubs.append(rospy.Publisher("~state" + suffix, LogitechR400, queue_size=10))
             self._state.append(LogitechR400())
 
     def __enter__(self):
@@ -76,7 +76,7 @@ class LogitechR400Usb(object):
         """
         Finds the usb devices in the system.
         """
-        
+
         devices = list(usb.core.find(find_all=True, custom_match=self.is_R400))
         return devices
 
@@ -91,7 +91,7 @@ class LogitechR400Usb(object):
                 device.detach_kernel_driver(self.__interface)
                 rospy.logdebug("kernel driver detached")
             except usb.core.USBError as usb_exc:
-                sysexit("Could not detach kernel driver: %s" %str(usb_exc))
+                sysexit("Could not detach kernel driver: %s" % str(usb_exc))
 
         device.set_configuration()
         usb.util.claim_interface(device, self.__interface)
@@ -110,7 +110,7 @@ class LogitechR400Usb(object):
         """
         Reads the data - called from a thread.
         """
-        #Reading the data
+        # Reading the data
         endpoint = []
         for i, device in enumerate(self._devices):
             endpoint.append(device[0][(0, 0)][0])
@@ -118,8 +118,9 @@ class LogitechR400Usb(object):
             for i, device in enumerate(self._devices):
                 try:
                     data = device.read(endpoint[i].bEndpointAddress,
-                                              endpoint[i].wMaxPacketSize)
-    
+                                              endpoint[i].wMaxPacketSize,
+                                              timeout=50)
+
                     self._fill_state(i, data)
                 except usb.core.USBError:
                     rospy.logdebug("Reader timedout - no events received.")
@@ -128,27 +129,47 @@ class LogitechR400Usb(object):
         """
         Fills the self._state properly from the raw data.
         """
-        
+
 #         print "DATA: "
 #         print len(data)
 #         for d in data:
 #             print "{:X}\n".format(d)
-            
-        
+
+
         self._state[index].buttons = [False] * 5
-            
-        if data[2] == 0x4e:
-            self._state[index].buttons[0] = True
-        elif data[2] == 0x4b:
-            self._state[index].buttons[1] = True
-        elif data[2] == 0x05:
-            self._state[index].buttons[2] = True
-        elif data[2] == 0x3e:
-            self._state[index].buttons[3] = True
-        elif data[2] == 0x29:
-            self._state[index].buttons[4] = True
-            
+
+        if self._devices[index].idVendor == R400_ID_VENDOR and self._devices[index].idProduct == R400_ID_PRODUCT:
+            self._fill_state_product_1(data, self._state[index].buttons)
+        elif self._devices[index].idVendor == R400_ID_VENDOR_2 and self._devices[index].idProduct == R400_ID_PRODUCT_2:
+            self._fill_state_product_2(data, self._state[index].buttons)
+
         self._pubs[index].publish(self._state[index])
+
+    def _fill_state_product_1(self, data, buttons):
+
+        if data[2] == 0x4e:
+            buttons[0] = True
+        elif data[2] == 0x4b:
+            buttons[1] = True
+        elif data[2] == 0x05:
+            buttons[2] = True
+        elif data[2] == 0x3e:
+            buttons[3] = True
+        elif data[2] == 0x29:
+            buttons[4] = True
+
+    def _fill_state_product_2(self, data, buttons):
+
+        if data[2] == 0x4e:
+            buttons[0] = True
+        elif data[2] == 0x4b:
+            buttons[1] = True
+        elif data[2] == 0x37:
+            buttons[2] = True
+        elif data[2] == 0x3e:
+            buttons[3] = True
+        elif data[2] == 0x29:
+            buttons[4] = True
 
 
 if __name__ == "__main__":
