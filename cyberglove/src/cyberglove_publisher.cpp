@@ -106,13 +106,12 @@ namespace cyberglove{
         res = serial_glove->set_frequency(frequency.hundred_hz);
         break;
       }
-      //No filtering: we're oversampling the data, we want a fast poling rate
-      res = serial_glove->set_filtering(false);
+
       //We want the glove to transmit the status (light on/off)
       res = serial_glove->set_transmit_info(true);
     }
-
-    //For the moment we don't send any configuration commands to the Cyberglove III, as the default values work well for us
+    //No filtering: we're oversampling the data, we want a fast poling rate
+    res = serial_glove->set_filtering(false);
 
     //publishes calibrated JointState messages
     std::string prefix;
@@ -212,6 +211,7 @@ namespace cyberglove{
       jointstate_msg.velocity.clear();
       jointstate_raw_msg.position.clear();
       jointstate_raw_msg.velocity.clear();
+      jointstate_raw_msg.header.stamp = ros::Time::now();
 
       //fill the joint_state msg with the averaged glove data
       for(unsigned int index_joint = 0; index_joint < CybergloveSerial::glove_size; ++index_joint)

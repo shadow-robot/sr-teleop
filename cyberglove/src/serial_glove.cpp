@@ -68,14 +68,18 @@ namespace cyberglove
 
   int CybergloveSerial::set_filtering(bool value)
   {
+    char aux[30];
+    aux[0] = 'F';
     if( value ) //Filtering will be on
     {
-      cereal_port->write("f 1\r", 4);
+      aux[1] = 0x01;
+      cereal_port->write(aux, 2);
       std::cout << " - Data filtered" << std::endl;
     }
     else // Filtering off
     {
-      cereal_port->write("f 0\r", 4);
+      aux[1] = 0x00;
+      cereal_port->write(aux, 2);
       std::cout << " - Data not filtered" << std::endl;
     }
     cereal_port->flush();
