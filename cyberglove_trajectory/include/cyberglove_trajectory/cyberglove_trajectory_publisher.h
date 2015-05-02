@@ -137,6 +137,7 @@ namespace cyberglove{
 
     std::string cyberglove_version_;
 
+    ros::Duration trajectory_tx_delay_;
     ros::Duration trajectory_delay_;
   }; // end class CybergloveTrajectoryPublisher
 
