@@ -241,16 +241,8 @@ namespace cyberglove
             {
               if(no_errors)
                 callback_function(glove_positions, true);
-
-              std::cout << "end of frame" << std::endl;
-
               reception_state_ = reception_16bit::SYNCHRONIZATION_1;
             }
-//            char aux[30];
-//            sprintf(aux, "0x%X", current_value);
-//
-//            std::cout << aux << std::endl;
-//            ++glove_pos_index;
             break;
         }
       }
