@@ -98,6 +98,18 @@ namespace cyberglove
     INITIAL,
     RECEIVING_FRAME
   };
+
+  namespace reception_16bit
+  {
+    enum reception_state_16bit
+    {
+      SYNCHRONIZATION_1,
+      SYNCHRONIZATION_2,
+      SYNCHRONIZATION_3,
+      TIMESTAMP,
+      RECEIVING_FRAME
+    };
+  }
   /**
    * This class uses the Cereal Port ROS package to connect to
    * and interact with the Cyberglove.
@@ -112,7 +124,7 @@ namespace cyberglove
      * @param callback a pointer to a callback function, which will be called each time a
      *                 complete joint message is received.
      */
-    CybergloveSerial(std::string serial_port, std::string cyberglove_version, boost::function<void(std::vector<float>, bool)> callback);
+    CybergloveSerial(std::string serial_port, std::string cyberglove_version, std::string streaming_protocol, boost::function<void(std::vector<float>, bool)> callback);
     ~CybergloveSerial();
 
     /**
@@ -166,6 +178,11 @@ namespace cyberglove
      */
     static const unsigned short glove_size;
 
+    /**
+     * The length of the timestamp in the 16bit protocol.
+     */
+    static const unsigned short timestamp_size;
+
   private:
     /**
      * CerealPort is the ROS library used to talk
@@ -185,11 +202,12 @@ namespace cyberglove
      */
     void stream_callback(char* world, int length);
 
-    int nb_msgs_received, glove_pos_index;
+    int nb_msgs_received, glove_pos_index, timestamp_bytes_, byte_index_;
     /// A vector containing the current joints positions.
     std::vector<float> glove_positions;
 
-    int current_value;
+    unsigned int current_value;
+    unsigned int sensor_value_;
 
     /**
      * The pointer to the function called each time a full message is received.
@@ -203,8 +221,9 @@ namespace cyberglove
     bool no_errors;
 
     std::string cyberglove_version_;
+    std::string streaming_protocol_;
 
-    reception_state reception_state_;
+    unsigned int reception_state_;
   };
 }
 

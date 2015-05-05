@@ -72,12 +72,16 @@ namespace cyberglove{
     n_tilde.param("cyberglove_version", cyberglove_version_, std::string("2"));
     ROS_INFO("Cyberglove version: %s", cyberglove_version_.c_str());
 
+    //Get the cyberglove streaming protocol '8bit' or '16bit'
+    n_tilde.param("streaming_protocol", streaming_protocol_, std::string("8bit"));
+    ROS_INFO("Streaming protocol: %s", streaming_protocol_.c_str());
+
     // set path to glove
     n_tilde.param("path_to_glove", path_to_glove, std::string("/dev/ttyS0"));
     ROS_INFO("Opening glove on port: %s", path_to_glove.c_str());
 
     //initialize the connection with the cyberglove and binds the callback function
-    serial_glove = boost::shared_ptr<CybergloveSerial>(new CybergloveSerial(path_to_glove, cyberglove_version_, boost::bind(&CyberglovePublisher::glove_callback, this, _1, _2)));
+    serial_glove = boost::shared_ptr<CybergloveSerial>(new CybergloveSerial(path_to_glove, cyberglove_version_, streaming_protocol_, boost::bind(&CyberglovePublisher::glove_callback, this, _1, _2)));
 
     int res = -1;
     if(cyberglove_version_ == "2")
@@ -102,13 +106,16 @@ namespace cyberglove{
         res = serial_glove->set_frequency(frequency.hundred_hz);
         break;
       }
-      //No filtering: we're oversampling the data, we want a fast poling rate
-      res = serial_glove->set_filtering(false);
+
       //We want the glove to transmit the status (light on/off)
       res = serial_glove->set_transmit_info(true);
     }
-
-    //For the moment we don't send any configuration commands to the Cyberglove III, as the default values work well for us
+    // Should the glove filter the data? (it leads to less smooth movements, but quieter behaviour on the motors)
+    bool filtering;
+    n_tilde.param("filter", filtering, false);
+    std::string filt_msg(filtering?"ON":"OFF");
+    ROS_INFO("Filtering: %s", filt_msg.c_str());
+    res = serial_glove->set_filtering(filtering);
 
     //publishes calibrated JointState messages
     std::string prefix;
@@ -208,6 +215,7 @@ namespace cyberglove{
       jointstate_msg.velocity.clear();
       jointstate_raw_msg.position.clear();
       jointstate_raw_msg.velocity.clear();
+      jointstate_raw_msg.header.stamp = ros::Time::now();
 
       //fill the joint_state msg with the averaged glove data
       for(unsigned int index_joint = 0; index_joint < CybergloveSerial::glove_size; ++index_joint)
