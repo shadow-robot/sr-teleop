@@ -4,7 +4,7 @@
   <arg name="version" default="2"/>
   <arg name="protocol" default="8bit"/>
   <!-- Activate internal cybeglove data filtering -->
-  <arg name="filter" default="false"/>
+  <arg name="filter" default="true"/>
 
   <param name="robot_description" textfile="$(find
   cyberglove)/model/cyberglove.xml"/>
