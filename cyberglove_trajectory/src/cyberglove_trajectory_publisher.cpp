@@ -241,8 +241,12 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
       res = serial_glove->set_transmit_info(true);
     }
 
-    //No filtering: we're oversampling the data, we want a fast poling rate
-    res = serial_glove->set_filtering(false);
+    // Should the glove filter the data? (it leads to less smooth movements, but quieter behaviour on the motors)
+    bool filtering;
+    n_tilde.param("filter", filtering, false);
+    std::string filt_msg(filtering?"ON":"OFF");
+    ROS_INFO("Filtering: %s", filt_msg.c_str());
+    res = serial_glove->set_filtering(filtering);
 
     //start reading the data.
     res = serial_glove->start_stream();

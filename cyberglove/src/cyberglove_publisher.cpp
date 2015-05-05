@@ -110,8 +110,12 @@ namespace cyberglove{
       //We want the glove to transmit the status (light on/off)
       res = serial_glove->set_transmit_info(true);
     }
-    //No filtering: we're oversampling the data, we want a fast poling rate
-    res = serial_glove->set_filtering(false);
+    // Should the glove filter the data? (it leads to less smooth movements, but quieter behaviour on the motors)
+    bool filtering;
+    n_tilde.param("filter", filtering, false);
+    std::string filt_msg(filtering?"ON":"OFF");
+    ROS_INFO("Filtering: %s", filt_msg.c_str());
+    res = serial_glove->set_filtering(filtering);
 
     //publishes calibrated JointState messages
     std::string prefix;
