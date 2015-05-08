@@ -197,7 +197,7 @@ namespace cyberglove
           case reception_16bit::TIMESTAMP:
             timestamp_bytes_++;
             // special case observed: sometimes after D A 0 sequence we get n'S' instead of directly the time
-            // anothe case observed is e1S, so checking for any S coming before time
+            // another case observed is e1S, so checking for any S coming before time
             if ((timestamp_bytes_ < timestamp_size) && (current_value == 'S'))
             {
               timestamp_bytes_ = 0;
