@@ -154,6 +154,9 @@ namespace cyberglove
 
       if((cyberglove_version_ == "3") && (streaming_protocol_ == "16bit"))
       {
+        char aux[30];
+//        sprintf(aux, "0x%X", current_value);
+//        std::cout << aux << std::endl;
         switch(reception_state_)
         {
           case reception_16bit::SYNCHRONIZATION_1:
@@ -194,20 +197,28 @@ namespace cyberglove
           case reception_16bit::TIMESTAMP:
             timestamp_bytes_++;
             // special case observed: sometimes after D A 0 sequence we get n'S' instead of directly the time
-            if ((timestamp_bytes_ == 2) && (current_value == 'S'))
+            // another case observed is e1S, so checking for any S coming before time
+            if ((timestamp_bytes_ < timestamp_size) && (current_value == 'S'))
             {
               timestamp_bytes_ = 0;
             }
             if (timestamp_bytes_ == timestamp_size)
             {
-              //the line starts with S, followed by the sensors values
-              ++nb_msgs_received;
-              //reset the index to 0
-              glove_pos_index = 0;
-              byte_index_ = 0;
-              //reset no_errors to true for the new message
-              no_errors = true;
-              reception_state_ = reception_16bit::RECEIVING_FRAME;
+              if (current_value == 'S')
+              {
+                ++nb_msgs_received;
+                //reset the index to 0
+                glove_pos_index = 0;
+                byte_index_ = 0;
+                //reset no_errors to true for the new message
+                no_errors = true;
+                reception_state_ = reception_16bit::RECEIVING_FRAME;
+              }
+              else
+              {
+                std::cout << "Sync error. Not an S: Reset frame" << std::endl;
+                reception_state_ = reception_16bit::SYNCHRONIZATION_1;
+              }
             }
             break;
           case reception_16bit::RECEIVING_FRAME:
@@ -219,6 +230,14 @@ namespace cyberglove
 //              char aux[30];
 //              sprintf(aux, "%u", sensor_value_);
 //              std::cout << aux << std::endl;
+              if (sensor_value_ > 0x0FFF)
+              {
+                sprintf(aux, "%u", sensor_value_);
+
+                std::cout << "bad sensor value: " << aux << " Reset frame" << std::endl;
+                reception_state_ = reception_16bit::SYNCHRONIZATION_1;
+                break;
+              }
 
               glove_positions[glove_pos_index] = (((float)sensor_value_) - 1.0f) / (float)(0x0FFF - 1);
               ++glove_pos_index;
@@ -234,7 +253,7 @@ namespace cyberglove
             if((byte_index_ == 0) && (sensor_value_ == 0))
             {
               no_errors = false;
-              //std::cout << "error detected" << std::endl;
+              std::cout << "error detected" << std::endl;
             }
 
             if (glove_pos_index == glove_size)
