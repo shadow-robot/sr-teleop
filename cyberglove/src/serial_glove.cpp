@@ -288,7 +288,13 @@ namespace cyberglove
             switch( glove_pos_index )
             {
             case glove_size:
-              if(cyberglove_version_ == "2")
+              if(cyberglove_version_ == "1")
+              {
+                // Cyberglove I doesn't provide information on the LED light state
+                // so we will consider it's always on
+                light_on = true;
+              }
+              else if(cyberglove_version_ == "2")
               {
                 //the last char of the msg is the status byte
 
@@ -318,13 +324,27 @@ namespace cyberglove
               break;
 
             case glove_size + 1:
-              //the last char of the line should be 0
-              //if it is 0, then the full message has been received,
-              //and we call the callback function.
-              if( current_value == 0 && no_errors)
-                callback_function(glove_positions, light_on);
-              if( current_value != 0)
-                std::cout << "Last char is not 0: " << current_value << std::endl;
+              if(cyberglove_version_ == "1")
+              {
+                //the last char of the line should be 'S' (83) but this is an assumption not based on documentation
+                // most of the time we get 83, but other numbers have been observed occasionally
+                //if it is 83, then the full message has been received,
+                //and we call the callback function.
+                if( current_value == 83 && no_errors)
+                  callback_function(glove_positions, light_on);
+                if( current_value != 83)
+                  std::cout << "Last char is not 0: " << current_value << std::endl;
+              }
+              else if(cyberglove_version_ == "2")
+              {
+                //the last char of the line should be 0
+                //if it is 0, then the full message has been received,
+                //and we call the callback function.
+                if( current_value == 0 && no_errors)
+                  callback_function(glove_positions, light_on);
+                if( current_value != 0)
+                  std::cout << "Last char is not 0: " << current_value << std::endl;
+              }
               reception_state_ = INITIAL;
               break;
 
