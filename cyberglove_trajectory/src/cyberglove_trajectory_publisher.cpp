@@ -337,7 +337,6 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
 
       trajectory_msgs::JointTrajectoryPoint trajectory_point = trajectory_msgs::JointTrajectoryPoint();
       trajectory_point.positions = hand_positions_no_J0;
-      trajectory_point.velocities = std::vector<double>(trajectory_goal_.trajectory.joint_names.size(), 0.0);
       // We set the time from start to 10 ms, to allow some time for the hand to get there
       trajectory_point.time_from_start = trajectory_delay_;
 
