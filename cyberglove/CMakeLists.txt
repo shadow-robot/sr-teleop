@@ -104,10 +104,9 @@ add_dependencies(cyberglove
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(cyberglove
-  cereal_port
-  tinyxml
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
+  tinyxml
 )
 
 
@@ -129,10 +128,9 @@ add_dependencies(cyberglove_node
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(cyberglove_node
-  cereal_port
-  tinyxml
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
+  tinyxml
 )
 
 #############
@@ -150,7 +148,7 @@ install(TARGETS cyberglove
 ## Testing ##
 #############
 if(CATKIN_ENABLE_TESTING)
-  find_package(rostest) 
+  find_package(rostest)
   add_rostest_gtest(test_cyberglove
     test/test_calibration.test
     test/test_calibration.cpp
@@ -162,6 +160,5 @@ if(CATKIN_ENABLE_TESTING)
     ${GTEST_LIBRARIES}
     ${Boost_LIBRARIES}
   )
-  
-endif()
 
+endif()
