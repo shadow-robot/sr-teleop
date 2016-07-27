@@ -33,6 +33,11 @@ sudo nano /etc/udev/rules.d/89-logitech-r400.rules
 ```
 ATTRS{idProduct}=="0111", ATTRS{idVendor}=="0e00", MODE="666", GROUP="plugdev"
 ```
+or
+```
+ATTRS{idProduct}=="c538", ATTRS{idVendor}=="046d", MODE="666", GROUP="plugdev"
+```
+(try both - which is succesfull depends on exactly what device you have)
 
 - Reload the rules without rebooting:
 ```
