@@ -27,7 +27,8 @@
 
 
 #include <ros/ros.h>
-
+#include <ros/package.h>
+#include <string>
 #include <math.h>
 #include <cyberglove/xml_calibration_parser.h>
 #include <gtest/gtest.h>
@@ -153,7 +154,8 @@ TEST(LookupTable, tableNotOrdered)
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
 
-  calib_parser = XmlCalibrationParser(path_to_calibration);
+  std::string cyberglove_path = ros::package::getPath("cyberglove");
+  calib_parser = XmlCalibrationParser(cyberglove_path+"/"+path_to_calibration);
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
