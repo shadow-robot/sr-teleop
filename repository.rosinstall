@@ -1,1 +1,4 @@
-- git: {local-name: cereal_port, uri: 'https://github.com/ozymandium/cereal-port'}
+- git: 
+    uri: 'https://github.com/ozymandium/cereal-port'
+    version: kinetic-devel
+    local-name: cereal_port
