@@ -1,4 +1,4 @@
 - git:
     uri: 'https://github.com/ozymandium/cereal-port'
-    version: indigo-devel
+    version: master
     local-name: cereal_port
