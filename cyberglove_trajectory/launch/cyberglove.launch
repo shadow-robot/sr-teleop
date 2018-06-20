@@ -8,7 +8,7 @@
   <!-- Activate internal cybeglove data filtering -->
   <arg name="filter" default="true"/>
   <!-- offset in second to set the trajectory time stamp. It must be grater than the time it takes for the trajectory goal msg to reach the trajectory controller -->
-  <arg name="trajectory_tx_delay" default="0.040"/>
+  <arg name="trajectory_tx_delay" default="0.05"/>
   <!-- this is the delay from the beginning of the trajectory. I.e. the time_from_start of the single trajectory point -->
   <arg name="trajectory_delay" default="0.05"/>
 
@@ -22,7 +22,7 @@
 	   - 1  -> 1 Hz
     -->
     <param name="sampling_frequency" type="double" value="100.0" />
-    <param name="publish_frequency" type="double" value="30.0" />
+    <param name="publish_frequency" type="double" value="100.0" />
     <param name="path_to_glove" type="string" value="$(arg serial_port)" />
     <rosparam command="load" file="$(arg calibration)"/>
     <param name="cyberglove_mapping_path" type="string" value="$(arg mapping)" />
