@@ -147,33 +147,57 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     }
 
     cyberglove_raw_pub = n_tilde.advertise<sensor_msgs::JointState>("raw/joint_states", 2);
+    cyberglove_cal_pub = n_tilde.advertise<sensor_msgs::JointState>("calibrated/joint_states", 2);
 
     reload_calibration_service = n_tilde.advertiseService<std_srvs::Empty::Request, std_srvs::Empty::Response>(
       "reload_calibration", boost::bind(&CybergloveTrajectoryPublisher::reload_calibration, this, _1, _2));
 
     //initialises joint names (the order is important)
-    jointstate_msg.name.push_back("G_ThumbRotate");
-    jointstate_msg.name.push_back("G_ThumbMPJ");
-    jointstate_msg.name.push_back("G_ThumbIJ");
-    jointstate_msg.name.push_back("G_ThumbAb");
-    jointstate_msg.name.push_back("G_IndexMPJ");
-    jointstate_msg.name.push_back("G_IndexPIJ");
-    jointstate_msg.name.push_back("G_IndexDIJ");
-    jointstate_msg.name.push_back("G_MiddleMPJ");
-    jointstate_msg.name.push_back("G_MiddlePIJ");
-    jointstate_msg.name.push_back("G_MiddleDIJ");
-    jointstate_msg.name.push_back("G_MiddleIndexAb");
-    jointstate_msg.name.push_back("G_RingMPJ");
-    jointstate_msg.name.push_back("G_RingPIJ");
-    jointstate_msg.name.push_back("G_RingDIJ");
-    jointstate_msg.name.push_back("G_RingMiddleAb");
-    jointstate_msg.name.push_back("G_PinkieMPJ");
-    jointstate_msg.name.push_back("G_PinkiePIJ");
-    jointstate_msg.name.push_back("G_PinkieDIJ");
-    jointstate_msg.name.push_back("G_PinkieRingAb");
-    jointstate_msg.name.push_back("G_PalmArch");
-    jointstate_msg.name.push_back("G_WristPitch");
-    jointstate_msg.name.push_back("G_WristYaw");
+    raw_jointstate_msg.name.push_back("G_ThumbRotate");
+    raw_jointstate_msg.name.push_back("G_ThumbMPJ");
+    raw_jointstate_msg.name.push_back("G_ThumbIJ");
+    raw_jointstate_msg.name.push_back("G_ThumbAb");
+    raw_jointstate_msg.name.push_back("G_IndexMPJ");
+    raw_jointstate_msg.name.push_back("G_IndexPIJ");
+    raw_jointstate_msg.name.push_back("G_IndexDIJ");
+    raw_jointstate_msg.name.push_back("G_MiddleMPJ");
+    raw_jointstate_msg.name.push_back("G_MiddlePIJ");
+    raw_jointstate_msg.name.push_back("G_MiddleDIJ");
+    raw_jointstate_msg.name.push_back("G_MiddleIndexAb");
+    raw_jointstate_msg.name.push_back("G_RingMPJ");
+    raw_jointstate_msg.name.push_back("G_RingPIJ");
+    raw_jointstate_msg.name.push_back("G_RingDIJ");
+    raw_jointstate_msg.name.push_back("G_RingMiddleAb");
+    raw_jointstate_msg.name.push_back("G_PinkieMPJ");
+    raw_jointstate_msg.name.push_back("G_PinkiePIJ");
+    raw_jointstate_msg.name.push_back("G_PinkieDIJ");
+    raw_jointstate_msg.name.push_back("G_PinkieRingAb");
+    raw_jointstate_msg.name.push_back("G_PalmArch");
+    raw_jointstate_msg.name.push_back("G_WristPitch");
+    raw_jointstate_msg.name.push_back("G_WristYaw");
+
+    cal_jointstate_msg.name.push_back("G_ThumbRotate");
+    cal_jointstate_msg.name.push_back("G_ThumbMPJ");
+    cal_jointstate_msg.name.push_back("G_ThumbIJ");
+    cal_jointstate_msg.name.push_back("G_ThumbAb");
+    cal_jointstate_msg.name.push_back("G_IndexMPJ");
+    cal_jointstate_msg.name.push_back("G_IndexPIJ");
+    cal_jointstate_msg.name.push_back("G_IndexDIJ");
+    cal_jointstate_msg.name.push_back("G_MiddleMPJ");
+    cal_jointstate_msg.name.push_back("G_MiddlePIJ");
+    cal_jointstate_msg.name.push_back("G_MiddleDIJ");
+    cal_jointstate_msg.name.push_back("G_MiddleIndexAb");
+    cal_jointstate_msg.name.push_back("G_RingMPJ");
+    cal_jointstate_msg.name.push_back("G_RingPIJ");
+    cal_jointstate_msg.name.push_back("G_RingDIJ");
+    cal_jointstate_msg.name.push_back("G_RingMiddleAb");
+    cal_jointstate_msg.name.push_back("G_PinkieMPJ");
+    cal_jointstate_msg.name.push_back("G_PinkiePIJ");
+    cal_jointstate_msg.name.push_back("G_PinkieDIJ");
+    cal_jointstate_msg.name.push_back("G_PinkieRingAb");
+    cal_jointstate_msg.name.push_back("G_PalmArch");
+    cal_jointstate_msg.name.push_back("G_WristPitch");
+    cal_jointstate_msg.name.push_back("G_WristYaw");
 
 
     //set sampling frequency
@@ -308,8 +332,11 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     {
       std::vector<double> glove_calibrated_positions, hand_positions, hand_positions_no_J0;
 
-      jointstate_msg.position.clear();
-      jointstate_msg.header.stamp = ros::Time::now();
+      raw_jointstate_msg.position.clear();
+      raw_jointstate_msg.header.stamp = ros::Time::now();
+      cal_jointstate_msg.position.clear();
+      cal_jointstate_msg.header.stamp = ros::Time::now();
+
 
       //fill the joint_state msg with the averaged glove data
       for(unsigned int index_joint = 0; index_joint < CybergloveSerial::glove_size; ++index_joint)
@@ -325,10 +352,13 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
 	calibration_tmp = calibration_map->find(glove_sensors_vector_[index_joint]);
 	double calibration_value = calibration_tmp->compute(static_cast<double> (averaged_value));
 
-	jointstate_msg.position.push_back(averaged_value);
+        raw_jointstate_msg.position.push_back(averaged_value);
+        cal_jointstate_msg.position.push_back(calibration_value);
         glove_calibrated_positions.push_back(calibration_value);
       }
-      cyberglove_raw_pub.publish(jointstate_msg);
+      cyberglove_raw_pub.publish(raw_jointstate_msg);
+      cyberglove_cal_pub.publish(cal_jointstate_msg);
+
 
       publish_counter_index = 0;
       glove_positions.clear();

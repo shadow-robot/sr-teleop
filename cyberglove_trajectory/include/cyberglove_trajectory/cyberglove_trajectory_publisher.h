@@ -110,7 +110,9 @@ namespace cyberglove{
     boost::scoped_ptr<CalibrationParser> map_calibration_parser;
 
     Publisher cyberglove_raw_pub;
-    sensor_msgs::JointState jointstate_msg;
+    Publisher cyberglove_cal_pub;
+    sensor_msgs::JointState raw_jointstate_msg;
+    sensor_msgs::JointState cal_jointstate_msg;
 
     std::vector<std::vector<float> > glove_positions;
 
