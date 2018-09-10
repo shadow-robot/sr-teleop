@@ -1,6 +1,6 @@
 <launch>
   <arg name="serial_port" default="/dev/ttyUSB0"/>
-  <arg name="joint_prefix" default=""/>
+  <arg name="joint_prefix" default="rh_"/>
   <arg name="calibration" default="$(find sr_cyberglove_config)/calibrations/right_cyberglove.yaml"/>
   <arg name="mapping" default="$(find sr_cyberglove_config)/mappings/GloveToHandMappings_generic"/>
   <arg name="version" default="2"/>
