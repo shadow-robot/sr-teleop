@@ -35,6 +35,7 @@
 #include <boost/assign.hpp>
 #include <math.h>
 #include <sr_utilities/sr_math_utils.hpp>
+#include <std_srvs/Empty.h>
 
 using namespace ros;
 
@@ -146,6 +147,9 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     }
 
     cyberglove_raw_pub = n_tilde.advertise<sensor_msgs::JointState>("raw/joint_states", 2);
+
+    reload_calibration_service = n_tilde.advertiseService<std_srvs::Empty::Request, std_srvs::Empty::Response>(
+      "reload_calibration", boost::bind(&CybergloveTrajectoryPublisher::reload_calibration, this, _1, _2));
 
     //initialises joint names (the order is important)
     jointstate_msg.name.push_back("G_ThumbRotate");
@@ -273,6 +277,12 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
     publishing = value;
   }
 
+  bool CybergloveTrajectoryPublisher::reload_calibration(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
+  {
+    calibration_map.reset(new CalibrationMap(read_joint_calibration()));
+    return true;
+  }
+
   /////////////////////////////////
   //       CALLBACK METHOD       //
   /////////////////////////////////
@@ -322,7 +332,6 @@ const std::vector<std::string> CybergloveTrajectoryPublisher::glove_sensors_vect
 
       publish_counter_index = 0;
       glove_positions.clear();
-
 
       applyJointMapping(glove_calibrated_positions, hand_positions);
       processJointZeros(hand_positions, hand_positions_no_J0);

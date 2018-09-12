@@ -46,6 +46,7 @@
 #include <sensor_msgs/JointState.h>
 #include <sr_utilities/calibration.hpp>
 #include <sr_utilities/thread_safe_map.hpp>
+#include <std_srvs/Empty.h>
 #include "sr_remappers/calibration_parser.h"
 
 using namespace ros;
@@ -96,6 +97,7 @@ namespace cyberglove{
      * @param light_on true if the light is on, false otherwise.
      */
     void glove_callback(std::vector<float> glove_pos, bool light_on);
+    bool reload_calibration(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
 
     std::string path_to_glove;
     bool publishing;
@@ -110,10 +112,9 @@ namespace cyberglove{
     Publisher cyberglove_raw_pub;
     sensor_msgs::JointState jointstate_msg;
 
-
-    std::vector<float> calibration_values;
-
     std::vector<std::vector<float> > glove_positions;
+
+    ros::ServiceServer reload_calibration_service;
 
 
     void applyJointMapping(const std::vector<double>& glove_postions, std::vector<double>& hand_positions );
