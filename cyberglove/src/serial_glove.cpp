@@ -151,13 +151,12 @@ namespace cyberglove
   void CybergloveSerial::stream_callback(char* world, int length)
   {
     //read each received char.
-    const char r_state[2] = {'I', 'R'};
     for (int i = 0; i < length; ++i)
     {
       current_value = (unsigned int)(unsigned char)world[i];
       if (OUTPUT_CHARS)
       {
-        std::cout  << "Receiving state: " << r_state[reception_state_] << ", Value: " << std::setw(3) << current_value <<  ", Character: " << world[i] <<"\n";
+        std::cout  << "Receiving state: " << reception_state_ << ", Value: " << std::setw(3) << current_value <<  ", Character: " << world[i] <<"\n";
       }
       
       if((cyberglove_version_ == "3") && (streaming_protocol_ == "16bit"))
