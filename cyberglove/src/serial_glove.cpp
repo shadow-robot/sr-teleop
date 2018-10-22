@@ -25,7 +25,10 @@
 #include "cyberglove/serial_glove.hpp"
 
 #include <iostream>
+#include <iomanip>
 #include <cstdio>
+
+#define OUTPUT_CHARS 0
 
 namespace cyberglove_freq
 {
@@ -151,7 +154,11 @@ namespace cyberglove
     for (int i = 0; i < length; ++i)
     {
       current_value = (unsigned int)(unsigned char)world[i];
-
+      if (OUTPUT_CHARS)
+      {
+        std::cout  << "Receiving state: " << reception_state_ << ", Value: " << std::setw(3) << current_value <<  ", Character: " << world[i] <<"\n";
+      }
+      
       if((cyberglove_version_ == "3") && (streaming_protocol_ == "16bit"))
       {
         char aux[30];
@@ -323,7 +330,11 @@ namespace cyberglove
               }
               break;
 
-            case glove_size + 1:
+            case glove_size + 1:  // Contains info we don't currently know how to interpret.
+            case glove_size + 2:  // Contains info we don't currently know how to interpret.
+              break;
+                
+            case glove_size + 3:
               if(cyberglove_version_ == "1")
               {
                 //the last char of the line should be 'S' (83) but this is an assumption not based on documentation
