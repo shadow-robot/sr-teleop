@@ -2,3 +2,8 @@
     uri: 'https://github.com/ozymandium/cereal-port'
     version: master
     local-name: cereal_port
+
+- git: 
+    uri: 'https://github.com/shadow-robot/sr_cyberglove_config.git'
+    version: master
+    local-name: sr_cyberglove_config
