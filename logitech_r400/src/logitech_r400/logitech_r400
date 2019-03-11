@@ -13,16 +13,12 @@ see README.md
 
 from logitech_r400.msg import LogitechR400
 import rospy
+import rospkg
 from sys import exit as sysexit
 from time import sleep
 import usb.core, usb.util
+import yaml
 
-
-R400_ID_VENDOR = 0x0e00
-R400_ID_PRODUCT = 0x0111
-# we have found 2 different types of values for R400
-R400_ID_VENDOR_2 = 0x046d
-R400_ID_PRODUCT_2 = 0xc538
 
 class LogitechR400Usb(object):
     """
@@ -39,6 +35,7 @@ class LogitechR400Usb(object):
     __interface = 0
 
     def __init__(self):
+        self.read_config()
         self._devices = self.find_devices()
         self._state = []
         self._pubs = []
@@ -66,9 +63,15 @@ class LogitechR400Usb(object):
         for device in self._devices:
             self.release_device(device)
 
+    def read_config(self):
+        config_file_path = rospkg.RosPack().get_path('logitech_r400') + '/config/config.yaml'
+        with open(config_file_path, 'r') as stream:
+            config = yaml.load(stream)
+        self.product = int('0x' + str(config['product']), 16)
+        self.vendor = int('0x' + str(config['vendor']), 16)
+
     def is_R400(self, dev):
-        if (dev.idVendor == R400_ID_VENDOR and dev.idProduct == R400_ID_PRODUCT) \
-           or (dev.idVendor == R400_ID_VENDOR_2 and dev.idProduct == R400_ID_PRODUCT_2):
+        if (dev.idVendor == self.vendor and dev.idProduct == self.product):
             return True
         return False
 
@@ -110,7 +113,7 @@ class LogitechR400Usb(object):
         """
         Reads the data - called from a thread.
         """
-        # Reading the data
+
         endpoint = []
         for i, device in enumerate(self._devices):
             endpoint.append(device[0][(0, 0)][0])
@@ -130,18 +133,10 @@ class LogitechR400Usb(object):
         Fills the self._state properly from the raw data.
         """
 
-#         print "DATA: "
-#         print len(data)
-#         for d in data:
-#             print "{:X}\n".format(d)
-
-
         self._state[index].buttons = [False] * 5
 
-        if self._devices[index].idVendor == R400_ID_VENDOR and self._devices[index].idProduct == R400_ID_PRODUCT:
+        if self._devices[index].idVendor == self.vendor and self._devices[index].idProduct == self.product:
             self._fill_state_product_1(data, self._state[index].buttons)
-        elif self._devices[index].idVendor == R400_ID_VENDOR_2 and self._devices[index].idProduct == R400_ID_PRODUCT_2:
-            self._fill_state_product_2(data, self._state[index].buttons)
 
         self._pubs[index].publish(self._state[index])
 
