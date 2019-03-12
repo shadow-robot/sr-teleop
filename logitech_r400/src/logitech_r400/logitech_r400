@@ -29,23 +29,27 @@ class LogitechR400Usb(object):
 
     from logitech_r400 import LogitechR400Usb
     with LogitechR400Usb() as pointer:
-        pointer.read_data()
+        pointer._read_data()
     """
 
     __interface = 0
 
     def __init__(self):
-        self.read_config()
-        self._devices = self.find_devices()
         self._state = []
         self._pubs = []
+        self.product = None
+        self.vendor = None
+
+        self._read_config()
+        self._devices = self._find_devices()
+
         if not self._devices:
             raise ValueError("Logitech R400 was not found")
 
         for device in self._devices:
             for _ in range(10):
                 try:
-                    self.grab_device(device)
+                    self._grab_device(device)
                     break
                 except usb.core.USBError:
                     rospy.logdebug("Trying to grab the device once more.")
@@ -61,29 +65,29 @@ class LogitechR400Usb(object):
 
     def __exit__(self, type, value, traceback):
         for device in self._devices:
-            self.release_device(device)
+            self._release_device(device)
 
-    def read_config(self):
+    def _read_config(self):
         config_file_path = rospkg.RosPack().get_path('logitech_r400') + '/config/config.yaml'
         with open(config_file_path, 'r') as stream:
             config = yaml.load(stream)
         self.product = int('0x' + str(config['product']), 16)
         self.vendor = int('0x' + str(config['vendor']), 16)
 
-    def is_R400(self, dev):
+    def _is_R400(self, dev):
         if (dev.idVendor == self.vendor and dev.idProduct == self.product):
             return True
         return False
 
-    def find_devices(self):
+    def _find_devices(self):
         """
         Finds the usb devices in the system.
         """
 
-        devices = list(usb.core.find(find_all=True, custom_match=self.is_R400))
+        devices = list(usb.core.find(find_all=True, custom_match=self._is_R400))
         return devices
 
-    def grab_device(self, device):
+    def _grab_device(self, device):
         """
         Grabs the usb device.
         """
@@ -99,7 +103,7 @@ class LogitechR400Usb(object):
         device.set_configuration()
         usb.util.claim_interface(device, self.__interface)
 
-    def release_device(self, device):
+    def _release_device(self, device):
         """
         Releases the devices and reattaches the kernel driver if necessary.
         """
@@ -109,7 +113,7 @@ class LogitechR400Usb(object):
         except usb.core.USBError:
             rospy.logwarn("Didn't reattach the kernel driver properly.")
 
-    def read_data(self):
+    def _read_data(self):
         """
         Reads the data - called from a thread.
         """
@@ -172,4 +176,4 @@ if __name__ == "__main__":
     rospy.loginfo("Initialized logitech_r400 node")
 
     with LogitechR400Usb() as pointer:
-        pointer.read_data()
+        pointer._read_data()
