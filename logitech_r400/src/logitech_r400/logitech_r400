@@ -74,7 +74,8 @@ class LogitechR400Usb(object):
 
     def _is_R400(self, dev):
         for config_name, config in self.configs.iteritems():
-            if (dev.idVendor == config['vendor'] and dev.idProduct == config['product']):
+            if (dev.idVendor == int('0x' + str(config['vendor']), 16) and
+                    dev.idProduct == int('0x' + str(config['product']), 16)):
                 self._used_config = config_name
                 return True
         return False
@@ -143,7 +144,7 @@ class LogitechR400Usb(object):
         self._pubs[index].publish(self._state[index])
 
     def _fill_state_product(self, data, buttons):
-        for mapping in self.configs[self.config_name]['mapping']:
+        for mapping in self.configs[self._used_config]['mapping']:
             if data[2] == mapping['data_value']:
                 buttons[mapping['button']] = True
 
