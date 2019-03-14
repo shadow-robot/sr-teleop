@@ -37,8 +37,8 @@ class LogitechR400Usb(object):
     def __init__(self):
         self._state = []
         self._pubs = []
-        self._product = None
-        self._vendor = None
+        self._configs = {}
+        self._used_config = None
 
         self._read_config()
         self._devices = self._find_devices()
@@ -68,15 +68,15 @@ class LogitechR400Usb(object):
             self._release_device(device)
 
     def _read_config(self):
-        config_file_path = rospkg.RosPack().get_path('logitech_r400') + '/config/config.yaml'
-        with open(config_file_path, 'r') as stream:
-            config = yaml.load(stream)
-        self._product = int('0x' + str(config['product']), 16)
-        self._vendor = int('0x' + str(config['vendor']), 16)
+        configs_file_path = rospkg.RosPack().get_path('logitech_r400') + '/config/config.yaml'
+        with open(configs_file_path, 'r') as stream:
+            self.configs = yaml.load(stream)
 
     def _is_R400(self, dev):
-        if (dev.idVendor == self._vendor and dev.idProduct == self._product):
-            return True
+        for config_name, config in self.configs.iteritems():
+            if (dev.idVendor == config['vendor'] and dev.idProduct == config['product']):
+                self._used_config = config_name
+                return True
         return False
 
     def _find_devices(self):
@@ -138,37 +138,14 @@ class LogitechR400Usb(object):
         """
 
         self._state[index].buttons = [False] * 5
-
-        if self._devices[index].idVendor == self._vendor and self._devices[index].idProduct == self._product:
-            self._fill_state_product_1(data, self._state[index].buttons)
+        self._fill_state_product(data, self._state[index].buttons)
 
         self._pubs[index].publish(self._state[index])
 
-    def _fill_state_product_1(self, data, buttons):
-
-        if data[2] == 0x4e:
-            buttons[0] = True
-        elif data[2] == 0x4b:
-            buttons[1] = True
-        elif data[2] == 0x05:
-            buttons[2] = True
-        elif data[2] == 0x3e:
-            buttons[3] = True
-        elif data[2] == 0x29:
-            buttons[4] = True
-
-    def _fill_state_product_2(self, data, buttons):
-
-        if data[2] == 0x4e:
-            buttons[0] = True
-        elif data[2] == 0x4b:
-            buttons[1] = True
-        elif data[2] == 0x37:
-            buttons[2] = True
-        elif data[2] == 0x3e:
-            buttons[3] = True
-        elif data[2] == 0x29:
-            buttons[4] = True
+    def _fill_state_product(self, data, buttons):
+        for mapping in self.configs[self.config_name]['mapping']:
+            if data[2] == mapping['data_value']:
+                buttons[mapping['button']] = True
 
 
 if __name__ == "__main__":

@@ -1,2 +1,42 @@
-product: 4101
-vendor: 2571
+version_0:
+  product: 0e00
+  vendor: 0111
+  mapping:
+    - data_value: 0x4e
+      button: 0
+    - data_value: 0x4b
+      button: 1
+    - data_value: 0x05
+      button: 2
+    - data_value: 0x3e
+      button: 3
+    - data_value: 0x29
+      button: 4
+version_1:
+  product: 046d
+  vendor: c538
+  mapping:
+    - data_value: 0x4e
+      button: 0
+    - data_value: 0x4b
+      button: 1
+    - data_value: 0x37
+      button: 2
+    - data_value: 0x3e
+      button: 3
+    - data_value: 0x29
+      button: 4
+version_2:
+  product: 4101
+  vendor: 2571
+  mapping:
+    - data_value: 0x4e
+      button: 0
+    - data_value: 0x4b
+      button: 1
+    - data_value: 0x05
+      button: 2
+    - data_value: 0x3e
+      button: 3
+    - data_value: 0x29
+      button: 4
