@@ -13,16 +13,12 @@ see README.md
 
 from logitech_r400.msg import LogitechR400
 import rospy
+import rospkg
 from sys import exit as sysexit
 from time import sleep
 import usb.core, usb.util
+import yaml
 
-
-R400_ID_VENDOR = 0x0e00
-R400_ID_PRODUCT = 0x0111
-# we have found 2 different types of values for R400
-R400_ID_VENDOR_2 = 0x046d
-R400_ID_PRODUCT_2 = 0xc538
 
 class LogitechR400Usb(object):
     """
@@ -39,16 +35,21 @@ class LogitechR400Usb(object):
     __interface = 0
 
     def __init__(self):
-        self._devices = self.find_devices()
         self._state = []
         self._pubs = []
+        self._configs = []
+        self._used_config_idx = None
+
+        self._read_config()
+        self._devices = self._find_devices()
+
         if not self._devices:
             raise ValueError("Logitech R400 was not found")
 
         for device in self._devices:
             for _ in range(10):
                 try:
-                    self.grab_device(device)
+                    self._grab_device(device)
                     break
                 except usb.core.USBError:
                     rospy.logdebug("Trying to grab the device once more.")
@@ -64,23 +65,29 @@ class LogitechR400Usb(object):
 
     def __exit__(self, type, value, traceback):
         for device in self._devices:
-            self.release_device(device)
+            self._release_device(device)
 
-    def is_R400(self, dev):
-        if (dev.idVendor == R400_ID_VENDOR and dev.idProduct == R400_ID_PRODUCT) \
-           or (dev.idVendor == R400_ID_VENDOR_2 and dev.idProduct == R400_ID_PRODUCT_2):
-            return True
+    def _read_config(self):
+        configs_file_path = rospkg.RosPack().get_path('logitech_r400') + '/config/config.yaml'
+        with open(configs_file_path, 'r') as stream:
+            self._configs = yaml.load(stream)
+
+    def _is_R400(self, dev):
+        for idx, config in enumerate(self._configs):
+            if dev.idVendor == config['vendor'] and dev.idProduct == config['product']:
+                self._used_config_idx = idx
+                return True
         return False
 
-    def find_devices(self):
+    def _find_devices(self):
         """
         Finds the usb devices in the system.
         """
 
-        devices = list(usb.core.find(find_all=True, custom_match=self.is_R400))
+        devices = list(usb.core.find(find_all=True, custom_match=self._is_R400))
         return devices
 
-    def grab_device(self, device):
+    def _grab_device(self, device):
         """
         Grabs the usb device.
         """
@@ -96,7 +103,7 @@ class LogitechR400Usb(object):
         device.set_configuration()
         usb.util.claim_interface(device, self.__interface)
 
-    def release_device(self, device):
+    def _release_device(self, device):
         """
         Releases the devices and reattaches the kernel driver if necessary.
         """
@@ -110,7 +117,7 @@ class LogitechR400Usb(object):
         """
         Reads the data - called from a thread.
         """
-        # Reading the data
+
         endpoint = []
         for i, device in enumerate(self._devices):
             endpoint.append(device[0][(0, 0)][0])
@@ -130,46 +137,15 @@ class LogitechR400Usb(object):
         Fills the self._state properly from the raw data.
         """
 
-#         print "DATA: "
-#         print len(data)
-#         for d in data:
-#             print "{:X}\n".format(d)
-
-
         self._state[index].buttons = [False] * 5
-
-        if self._devices[index].idVendor == R400_ID_VENDOR and self._devices[index].idProduct == R400_ID_PRODUCT:
-            self._fill_state_product_1(data, self._state[index].buttons)
-        elif self._devices[index].idVendor == R400_ID_VENDOR_2 and self._devices[index].idProduct == R400_ID_PRODUCT_2:
-            self._fill_state_product_2(data, self._state[index].buttons)
+        self._fill_state_product(data, self._state[index].buttons)
 
         self._pubs[index].publish(self._state[index])
 
-    def _fill_state_product_1(self, data, buttons):
-
-        if data[2] == 0x4e:
-            buttons[0] = True
-        elif data[2] == 0x4b:
-            buttons[1] = True
-        elif data[2] == 0x05:
-            buttons[2] = True
-        elif data[2] == 0x3e:
-            buttons[3] = True
-        elif data[2] == 0x29:
-            buttons[4] = True
-
-    def _fill_state_product_2(self, data, buttons):
-
-        if data[2] == 0x4e:
-            buttons[0] = True
-        elif data[2] == 0x4b:
-            buttons[1] = True
-        elif data[2] == 0x37:
-            buttons[2] = True
-        elif data[2] == 0x3e:
-            buttons[3] = True
-        elif data[2] == 0x29:
-            buttons[4] = True
+    def _fill_state_product(self, data, buttons):
+        for mapping in self._configs[self._used_config_idx]['mapping']:
+            if data[2] == mapping['data_value']:
+                buttons[mapping['button']] = True
 
 
 if __name__ == "__main__":

@@ -1,0 +1,39 @@
+- product: 0x0e00
+  vendor: 0x0111
+  mapping:
+    - data_value: 0x4e
+      button: 0
+    - data_value: 0x4b
+      button: 1
+    - data_value: 0x05
+      button: 2
+    - data_value: 0x3e
+      button: 3
+    - data_value: 0x29
+      button: 4
+- product: 0x046d
+  vendor: 0xc538
+  mapping:
+    - data_value: 0x4e
+      button: 0
+    - data_value: 0x4b
+      button: 1
+    - data_value: 0x37
+      button: 2
+    - data_value: 0x3e
+      button: 3
+    - data_value: 0x29
+      button: 4
+- product: 0x4101
+  vendor: 0x2571
+  mapping:
+    - data_value: 0x4e
+      button: 0
+    - data_value: 0x4b
+      button: 1
+    - data_value: 0x05
+      button: 2
+    - data_value: 0x3e
+      button: 3
+    - data_value: 0x29
+      button: 4
