@@ -53,4 +53,6 @@ Now, reload the rules without rebooting:
 sudo udevadm trigger
 ```
 
+Finally, make sure the product and vendor values pair found above is one of declared sets in [this](./config/config.yaml) config file.
+
 Information based on the following [wiki](http://www.tincantools.com/wiki/Accessing_Devices_without_Sudo).
