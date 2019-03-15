@@ -1,6 +1,5 @@
-version_0:
-  product: 0e00
-  vendor: 0111
+- product: 0x0e00
+  vendor: 0x0111
   mapping:
     - data_value: 0x4e
       button: 0
@@ -12,9 +11,8 @@ version_0:
       button: 3
     - data_value: 0x29
       button: 4
-version_1:
-  product: 046d
-  vendor: c538
+- product: 0x046d
+  vendor: 0xc538
   mapping:
     - data_value: 0x4e
       button: 0
@@ -26,9 +24,8 @@ version_1:
       button: 3
     - data_value: 0x29
       button: 4
-version_2:
-  product: 4101
-  vendor: 2571
+- product: 0x4101
+  vendor: 0x2571
   mapping:
     - data_value: 0x4e
       button: 0

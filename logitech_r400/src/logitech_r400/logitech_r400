@@ -37,8 +37,8 @@ class LogitechR400Usb(object):
     def __init__(self):
         self._state = []
         self._pubs = []
-        self._configs = {}
-        self._used_config = None
+        self._configs = []
+        self._used_config_idx = None
 
         self._read_config()
         self._devices = self._find_devices()
@@ -70,13 +70,12 @@ class LogitechR400Usb(object):
     def _read_config(self):
         configs_file_path = rospkg.RosPack().get_path('logitech_r400') + '/config/config.yaml'
         with open(configs_file_path, 'r') as stream:
-            self.configs = yaml.load(stream)
+            self._configs = yaml.load(stream)
 
     def _is_R400(self, dev):
-        for config_name, config in self.configs.iteritems():
-            if (dev.idVendor == int('0x' + str(config['vendor']), 16) and
-                    dev.idProduct == int('0x' + str(config['product']), 16)):
-                self._used_config = config_name
+        for idx, config in enumerate(self._configs):
+            if dev.idVendor == config['vendor'] and dev.idProduct == config['product']:
+                self._used_config_idx = idx
                 return True
         return False
 
@@ -144,7 +143,7 @@ class LogitechR400Usb(object):
         self._pubs[index].publish(self._state[index])
 
     def _fill_state_product(self, data, buttons):
-        for mapping in self.configs[self._used_config]['mapping']:
+        for mapping in self._configs[self._used_config_idx]['mapping']:
             if data[2] == mapping['data_value']:
                 buttons[mapping['button']] = True
 
