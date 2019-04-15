@@ -124,6 +124,12 @@ target_link_libraries(cyberglove_remapper
 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
-install(TARGETS cyberglove_remapper
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(TARGETS sr_remappers
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/sr_remappers/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
