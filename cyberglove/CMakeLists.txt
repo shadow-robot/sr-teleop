@@ -147,7 +147,7 @@ install(TARGETS cyberglove
 )
 
 install(DIRECTORY include/cyberglove/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
 #############
