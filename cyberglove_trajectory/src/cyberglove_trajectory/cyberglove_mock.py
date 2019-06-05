@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+#
+# Copyright (C) 2019 Shadow Robot Company Ltd - All Rights Reserved.
+# Proprietary and Confidential. Unauthorized copying of the content in this file, via any medium is strictly prohibited.
+
 import rospy
 import rospkg
 import argparse
@@ -88,9 +92,12 @@ class CybergloveMock(object):
             while not rospy.is_shutdown():
                 #self.trigger_press()
                 self.pack_hand()
+                rospy.loginfo("SPAM")
                 rospy.sleep(3)
                 self.open_hand()
+                rospy.loginfo("SPAM")
                 rospy.sleep(3)
+
             #self.trigger_release()
 
 
