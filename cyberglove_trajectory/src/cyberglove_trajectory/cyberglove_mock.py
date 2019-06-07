@@ -53,6 +53,7 @@ class CybergloveMock(object):
 
     def run(self):
         if self._cycle_hand_positions:
+            rospy.loginfo("Alternating between pack and open every 3 seconds...")
             while not rospy.is_shutdown():
                 self.pack_hand()
                 rospy.sleep(3)
