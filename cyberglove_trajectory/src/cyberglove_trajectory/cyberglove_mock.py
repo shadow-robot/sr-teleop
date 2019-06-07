@@ -4,10 +4,7 @@
 # Proprietary and Confidential. Unauthorized copying of the content in this file, via any medium is strictly prohibited.
 
 import rospy
-import rospkg
-import argparse
 import actionlib
-import sys
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 from trajectory_msgs.msg import JointTrajectoryPoint
 
