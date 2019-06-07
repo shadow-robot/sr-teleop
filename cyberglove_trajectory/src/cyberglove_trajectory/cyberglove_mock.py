@@ -9,12 +9,12 @@ import argparse
 import actionlib
 import sys
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from trajectory_msgs.msg import JointTrajectoryPoint
 
 class CybergloveMock(object):
     def __init__(self, cycle_hand_positions=True):
         self._cycle_hand_positions = cycle_hand_positions
-        self._hand_traj_client = actionlib.SimpleActionClient('/sr_teleop_vive_cyberglove_trajectory_controller' +
+        self._hand_traj_client = actionlib.SimpleActionClient('/rh_trajectory_controller' +
                                                               '/follow_joint_trajectory',
                                                               FollowJointTrajectoryAction)
 
