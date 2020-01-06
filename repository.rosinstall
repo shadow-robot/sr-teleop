@@ -7,3 +7,13 @@
     uri: https://github.com/shadow-robot/sr_cyberglove_config.git
     version: master
     local-name: sr_cyberglove_config
+
+- git: 
+    uri: https://github.com/shadow-robot/sr_core.git
+    version: kinetic-devel
+    local-name: sr_core
+
+- git: 
+    uri: https://github.com/shadow-robot/sr_common.git
+    version: kinetic-devel
+    local-name: sr_common
