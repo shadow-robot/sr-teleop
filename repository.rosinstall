@@ -10,10 +10,10 @@
 
 - git: 
     uri: https://github.com/shadow-robot/sr_core.git
-    version: kinetic-devel
+    version: melodic-devel
     local-name: sr_core
 
 - git: 
     uri: https://github.com/shadow-robot/sr_common.git
-    version: kinetic-devel
+    version: melodic-devel
     local-name: sr_common
